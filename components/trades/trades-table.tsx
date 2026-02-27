@@ -44,7 +44,7 @@ const columns: ColumnDef<Trade>[] = [
     accessorKey: 'title',
     header: 'Market',
     cell: ({ row }) => (
-      <span className="text-sm font-medium truncate max-w-[200px] block">
+      <span className="text-sm font-medium truncate max-w-[200px] block" title={row.getValue('title')}>
         {row.getValue('title')}
       </span>
     ),

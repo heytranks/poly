@@ -44,21 +44,18 @@ export default async function AnalyzePage({ params }: PageProps) {
   const tradeTimestamps = rawTrades.map((t) => t.timestamp);
   const closedTimestamps = closedPositions.map((p) => p.timestamp);
 
+  const fmtMin = (ts: number) => {
+    const d = new Date(ts * 1000);
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+  };
+
   const dataCoverage: DataCoverage = {
     tradeCount: rawTrades.length,
     closedPositionCount: closedPositions.length,
-    oldestTradeDate: tradeTimestamps.length > 0
-      ? new Date(Math.min(...tradeTimestamps) * 1000).toISOString().split('T')[0]
-      : null,
-    newestTradeDate: tradeTimestamps.length > 0
-      ? new Date(Math.max(...tradeTimestamps) * 1000).toISOString().split('T')[0]
-      : null,
-    oldestClosedDate: closedTimestamps.length > 0
-      ? new Date(Math.min(...closedTimestamps) * 1000).toISOString().split('T')[0]
-      : null,
-    newestClosedDate: closedTimestamps.length > 0
-      ? new Date(Math.max(...closedTimestamps) * 1000).toISOString().split('T')[0]
-      : null,
+    oldestTradeDate: tradeTimestamps.length > 0 ? fmtMin(Math.min(...tradeTimestamps)) : null,
+    newestTradeDate: tradeTimestamps.length > 0 ? fmtMin(Math.max(...tradeTimestamps)) : null,
+    oldestClosedDate: closedTimestamps.length > 0 ? fmtMin(Math.min(...closedTimestamps)) : null,
+    newestClosedDate: closedTimestamps.length > 0 ? fmtMin(Math.max(...closedTimestamps)) : null,
   };
 
   // 5. 프로필 구성 (volume = trades 합산)

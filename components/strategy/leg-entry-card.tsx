@@ -113,7 +113,7 @@ export function LegEntryCard({ data }: LegEntryCardProps) {
                 {idx > 0 && <Separator className="mb-3" />}
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium truncate">{pair.title}</p>
+                    <p className="text-sm font-medium truncate" title={pair.title}>{pair.title}</p>
                     <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-xs text-muted-foreground">
                       <span>
                         1st ({pair.firstLeg}):{' '}

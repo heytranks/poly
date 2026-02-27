@@ -62,7 +62,7 @@ export function PairCostCard({ analysis }: PairCostCardProps) {
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <p className="text-sm font-medium truncate">{pair.title}</p>
+                    <p className="text-sm font-medium truncate" title={pair.title}>{pair.title}</p>
                     {pair.isLocked && (
                       <Badge className="bg-green-500/20 text-green-500 border-green-500/30 shrink-0">
                         Locked Profit

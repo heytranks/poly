@@ -100,7 +100,7 @@ export function HedgeEfficiencyCard({ data }: HedgeEfficiencyCardProps) {
               {idx > 0 && <Separator className="mb-3" />}
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium truncate">{pair.title}</p>
+                  <p className="text-sm font-medium truncate" title={pair.title}>{pair.title}</p>
                   <div className="flex gap-3 mt-1 text-xs text-muted-foreground">
                     <span>Cost: {pair.pairCost.toFixed(4)}</span>
                     <span>Capital: {formatCurrency(pair.capitalInvested)}</span>
