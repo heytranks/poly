@@ -112,12 +112,15 @@ export default async function AnalyzePage({ params }: PageProps) {
     return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
   };
 
+  const closedTimestamps = closedPositions.map((cp) => cp.timestamp).filter((t) => t > 0);
+
   const dataCoverage: DataCoverage = {
-    tradeCount: trades.length,
     activityCount: activities.length,
     closedPositionCount: cpStats.winRate.totalClosed,
     oldestActivityDate: activityTimestamps.length > 0 ? fmtMin(Math.min(...activityTimestamps)) : null,
     newestActivityDate: activityTimestamps.length > 0 ? fmtMin(Math.max(...activityTimestamps)) : null,
+    oldestClosedDate: closedTimestamps.length > 0 ? fmtMin(Math.min(...closedTimestamps)) : null,
+    newestClosedDate: closedTimestamps.length > 0 ? fmtMin(Math.max(...closedTimestamps)) : null,
   };
 
   // 6. Build profile
@@ -127,7 +130,10 @@ export default async function AnalyzePage({ params }: PageProps) {
   const totalSharesVolume = activities
     .filter((a) => a.type === 'TRADE')
     .reduce((s, a) => s + a.size, 0);
-  const uniqueMarkets = new Set(activities.map((a) => a.conditionId)).size;
+  const uniqueMarkets = new Set([
+    ...openPositions.map((p) => p.conditionId),
+    ...closedPositions.map((p) => p.conditionId),
+  ]).size;
 
   const profile: UserProfile = {
     address: wallet,

@@ -36,7 +36,7 @@ export function ProfileHeader({ profile }: ProfileHeaderProps) {
           <span>마켓: <strong className="text-foreground">{profile.markets}</strong></span>
         </div>
         {profile.dataCoverage && (
-          <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
+          <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground flex-wrap">
             <span>
               활동 {profile.dataCoverage.activityCount.toLocaleString()}건
               {profile.dataCoverage.oldestActivityDate && profile.dataCoverage.newestActivityDate && (
@@ -45,7 +45,10 @@ export function ProfileHeader({ profile }: ProfileHeaderProps) {
             </span>
             <span className="text-muted-foreground/50">|</span>
             <span>
-              거래 {profile.dataCoverage.tradeCount.toLocaleString()}건, 종료 마켓 {profile.dataCoverage.closedPositionCount.toLocaleString()}건
+              종료 마켓 {profile.dataCoverage.closedPositionCount.toLocaleString()}건
+              {profile.dataCoverage.oldestClosedDate && profile.dataCoverage.newestClosedDate && (
+                <> ({profile.dataCoverage.oldestClosedDate} ~ {profile.dataCoverage.newestClosedDate})</>
+              )}
             </span>
           </div>
         )}

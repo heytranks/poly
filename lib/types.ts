@@ -187,11 +187,12 @@ export interface MarketPnL {
 }
 
 export interface DataCoverage {
-  tradeCount: number;
   activityCount: number;
   closedPositionCount: number;
   oldestActivityDate: string | null;
   newestActivityDate: string | null;
+  oldestClosedDate: string | null;
+  newestClosedDate: string | null;
 }
 
 export interface UserProfile {
