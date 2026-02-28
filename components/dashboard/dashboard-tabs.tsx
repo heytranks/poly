@@ -14,6 +14,7 @@ import { TimingHeatmap } from '@/components/charts/timing-heatmap';
 import { CategoryChart } from '@/components/charts/category-chart';
 import { DirectionChart } from '@/components/charts/direction-chart';
 import { EntryPriceChart } from '@/components/charts/entry-price-chart';
+import { BotAnalysisPanel } from '@/components/charts/bot-analysis-panel';
 import type { AnalysisSummary, Trade } from '@/lib/types';
 
 interface DashboardTabsProps {
@@ -25,13 +26,16 @@ export function DashboardTabs({ analysis, trades }: DashboardTabsProps) {
   return (
     <Tabs defaultValue="trades" className="w-full">
       <TabsList className="bg-muted/50 flex-wrap h-auto gap-1 p-1">
-        <TabsTrigger value="trades">Trades</TabsTrigger>
-        <TabsTrigger value="pnl">PnL Chart</TabsTrigger>
-        <TabsTrigger value="strategy">Strategy</TabsTrigger>
-        <TabsTrigger value="categories">Markets</TabsTrigger>
-        <TabsTrigger value="timing">Timing</TabsTrigger>
-        <TabsTrigger value="direction">Direction</TabsTrigger>
-        <TabsTrigger value="entry">Entry Price</TabsTrigger>
+        <TabsTrigger value="trades">거래 내역</TabsTrigger>
+        <TabsTrigger value="pnl">손익 차트</TabsTrigger>
+        <TabsTrigger value="strategy">전략 분석</TabsTrigger>
+        <TabsTrigger value="categories">마켓별</TabsTrigger>
+        <TabsTrigger value="timing">시간대</TabsTrigger>
+        <TabsTrigger value="direction">방향성</TabsTrigger>
+        <TabsTrigger value="entry">진입가</TabsTrigger>
+        {analysis.botAnalysis && (
+          <TabsTrigger value="bot">봇 분석</TabsTrigger>
+        )}
       </TabsList>
 
       <TabsContent value="trades" className="mt-4">
@@ -62,7 +66,7 @@ export function DashboardTabs({ analysis, trades }: DashboardTabsProps) {
         {analysis.categories ? (
           <CategoryChart data={analysis.categories} />
         ) : (
-          <p className="text-muted-foreground text-center py-8">No category data available</p>
+          <p className="text-muted-foreground text-center py-8">마켓 카테고리 데이터가 없습니다</p>
         )}
       </TabsContent>
 
@@ -70,7 +74,7 @@ export function DashboardTabs({ analysis, trades }: DashboardTabsProps) {
         {analysis.timing ? (
           <TimingHeatmap data={analysis.timing} />
         ) : (
-          <p className="text-muted-foreground text-center py-8">No timing data available</p>
+          <p className="text-muted-foreground text-center py-8">시간대 데이터가 없습니다</p>
         )}
       </TabsContent>
 
@@ -78,7 +82,7 @@ export function DashboardTabs({ analysis, trades }: DashboardTabsProps) {
         {analysis.direction ? (
           <DirectionChart data={analysis.direction} />
         ) : (
-          <p className="text-muted-foreground text-center py-8">No direction data available</p>
+          <p className="text-muted-foreground text-center py-8">방향성 데이터가 없습니다</p>
         )}
       </TabsContent>
 
@@ -86,9 +90,15 @@ export function DashboardTabs({ analysis, trades }: DashboardTabsProps) {
         {analysis.entryPrice ? (
           <EntryPriceChart data={analysis.entryPrice} />
         ) : (
-          <p className="text-muted-foreground text-center py-8">No entry price data available</p>
+          <p className="text-muted-foreground text-center py-8">진입가 데이터가 없습니다</p>
         )}
       </TabsContent>
+
+      {analysis.botAnalysis && (
+        <TabsContent value="bot" className="mt-4">
+          <BotAnalysisPanel data={analysis.botAnalysis} />
+        </TabsContent>
+      )}
     </Tabs>
   );
 }

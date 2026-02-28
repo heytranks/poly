@@ -1,23 +1,41 @@
-import type { RawClosedPosition, RawPosition, PnlAnalysis, PnlDataPoint } from '@/lib/types';
+import type { RawPosition, PositionPnL, MarketPnL, PnlAnalysis, PnlDataPoint } from '@/lib/types';
 
 export function analyzePnl(
-  closedPositions: RawClosedPosition[],
-  openPositions: RawPosition[],
+  positionPnLs: PositionPnL[],
+  marketPnLs: Map<string, MarketPnL>,
+  openPositions: RawPosition[]
 ): PnlAnalysis {
-  const realizedPnl = closedPositions.reduce((sum, p) => sum + p.realizedPnl, 0);
+  // Realized PnL from all market-level PnLs
+  const realizedPnl = Array.from(marketPnLs.values()).reduce((sum, m) => sum + m.realizedPnl, 0);
+
+  // Unrealized PnL from open positions
   const unrealizedPnl = openPositions.reduce((sum, p) => sum + p.cashPnl, 0);
   const totalPnl = realizedPnl + unrealizedPnl;
 
-  const positionPnls = closedPositions.map((p) => p.realizedPnl);
-  const maxSingleWin = positionPnls.length ? Math.max(...positionPnls, 0) : 0;
-  const maxSingleLoss = positionPnls.length ? Math.min(...positionPnls, 0) : 0;
+  // Per-market PnL for stats (closed markets only)
+  const closedMarkets = Array.from(marketPnLs.values()).filter((m) => !m.isOpen);
+  const marketPnls = closedMarkets.map((m) => m.realizedPnl);
 
-  const totalGains = positionPnls.filter((p) => p > 0).reduce((s, p) => s + p, 0);
-  const totalLosses = Math.abs(positionPnls.filter((p) => p < 0).reduce((s, p) => s + p, 0));
+  const maxSingleWin = marketPnls.length ? Math.max(...marketPnls, 0) : 0;
+  const maxSingleLoss = marketPnls.length ? Math.min(...marketPnls, 0) : 0;
+
+  const totalGains = marketPnls.filter((p) => p > 0).reduce((s, p) => s + p, 0);
+  const totalLosses = Math.abs(marketPnls.filter((p) => p < 0).reduce((s, p) => s + p, 0));
   const profitFactor = totalLosses > 0 ? totalGains / totalLosses : totalGains > 0 ? Infinity : 0;
 
-  // Cumulative PnL: closed positions 시간순 누적
-  const cumulativePnlSeries = buildCumulativePnl(closedPositions);
+  // Cumulative PnL series based on lastActivityTime
+  const cumulativePnlSeries = buildCumulativePnl(closedMarkets);
+
+  // Average position size per market (total USDC invested per conditionId)
+  const marketInvestment = new Map<string, number>();
+  for (const p of positionPnLs) {
+    if (p.outcomeIndex === 999 || p.totalBought === 0) continue;
+    marketInvestment.set(p.conditionId, (marketInvestment.get(p.conditionId) ?? 0) + p.totalBought);
+  }
+  const marketInvestments = Array.from(marketInvestment.values());
+  const avgPositionSize = marketInvestments.length > 0
+    ? marketInvestments.reduce((s, v) => s + v, 0) / marketInvestments.length
+    : 0;
 
   return {
     realizedPnl: round2(realizedPnl),
@@ -27,20 +45,23 @@ export function analyzePnl(
     maxSingleWin: round2(maxSingleWin),
     maxSingleLoss: round2(maxSingleLoss),
     profitFactor: round2(profitFactor),
+    avgPositionSize: round2(avgPositionSize),
   };
 }
 
-function buildCumulativePnl(closedPositions: RawClosedPosition[]): PnlDataPoint[] {
-  if (!closedPositions.length) return [];
+function buildCumulativePnl(closedMarkets: MarketPnL[]): PnlDataPoint[] {
+  if (!closedMarkets.length) return [];
 
-  // timestamp 기준 오름차순 정렬
-  const sorted = [...closedPositions].sort((a, b) => a.timestamp - b.timestamp);
+  // Sort by lastActivityTime ascending
+  const sorted = [...closedMarkets].sort(
+    (a, b) => a.lastActivityTime.getTime() - b.lastActivityTime.getTime()
+  );
 
-  // 일별 그룹핑
+  // Group by date
   const dailyMap = new Map<string, number>();
-  for (const pos of sorted) {
-    const dateKey = new Date(pos.timestamp * 1000).toISOString().split('T')[0];
-    dailyMap.set(dateKey, (dailyMap.get(dateKey) ?? 0) + pos.realizedPnl);
+  for (const market of sorted) {
+    const dateKey = market.lastActivityTime.toISOString().split('T')[0];
+    dailyMap.set(dateKey, (dailyMap.get(dateKey) ?? 0) + market.realizedPnl);
   }
 
   const series: PnlDataPoint[] = [];

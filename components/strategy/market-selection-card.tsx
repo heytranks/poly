@@ -30,7 +30,7 @@ export function MarketSelectionCard({ data }: MarketSelectionCardProps) {
     return (
       <Card>
         <CardContent className="flex items-center justify-center h-48 text-muted-foreground">
-          No market selection data available
+          마켓 선택 데이터가 없습니다
         </CardContent>
       </Card>
     );
@@ -38,14 +38,14 @@ export function MarketSelectionCard({ data }: MarketSelectionCardProps) {
 
   const barData = [
     {
-      name: 'Total PnL',
-      Hedged: data.hedged.totalPnl,
-      'Single Direction': data.singleDirection.totalPnl,
+      name: '총 손익',
+      헤지: data.hedged.totalPnl,
+      단방향: data.singleDirection.totalPnl,
     },
     {
-      name: 'Avg PnL',
-      Hedged: data.hedged.avgPnlPerMarket,
-      'Single Direction': data.singleDirection.avgPnlPerMarket,
+      name: '평균 손익',
+      헤지: data.hedged.avgPnlPerMarket,
+      단방향: data.singleDirection.avgPnlPerMarket,
     },
   ];
 
@@ -54,7 +54,7 @@ export function MarketSelectionCard({ data }: MarketSelectionCardProps) {
       {/* Side-by-side stats */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-lg">Market Selection: Hedged vs Single Direction</CardTitle>
+          <CardTitle className="text-lg">마켓 선택: 헤지 vs 단방향</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 gap-8">
@@ -62,27 +62,27 @@ export function MarketSelectionCard({ data }: MarketSelectionCardProps) {
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS.hedged }} />
-                <span className="font-semibold" style={{ color: COLORS.hedged }}>Hedged</span>
+                <span className="font-semibold" style={{ color: COLORS.hedged }}>헤지</span>
               </div>
               <div className="space-y-1 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Markets</span>
+                  <span className="text-muted-foreground">마켓 수</span>
                   <span>{data.hedged.marketCount}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Total PnL</span>
+                  <span className="text-muted-foreground">총 손익</span>
                   <span className={data.hedged.totalPnl >= 0 ? 'text-green-500' : 'text-red-500'}>
                     {formatCurrency(data.hedged.totalPnl)}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Avg PnL</span>
+                  <span className="text-muted-foreground">평균 손익</span>
                   <span className={data.hedged.avgPnlPerMarket >= 0 ? 'text-green-500' : 'text-red-500'}>
                     {formatCurrency(data.hedged.avgPnlPerMarket)}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Win Rate</span>
+                  <span className="text-muted-foreground">승률</span>
                   <span>{formatPercent(data.hedged.winRate)}</span>
                 </div>
               </div>
@@ -92,27 +92,27 @@ export function MarketSelectionCard({ data }: MarketSelectionCardProps) {
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS.single }} />
-                <span className="font-semibold" style={{ color: COLORS.single }}>Single Direction</span>
+                <span className="font-semibold" style={{ color: COLORS.single }}>단방향</span>
               </div>
               <div className="space-y-1 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Markets</span>
+                  <span className="text-muted-foreground">마켓 수</span>
                   <span>{data.singleDirection.marketCount}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Total PnL</span>
+                  <span className="text-muted-foreground">총 손익</span>
                   <span className={data.singleDirection.totalPnl >= 0 ? 'text-green-500' : 'text-red-500'}>
                     {formatCurrency(data.singleDirection.totalPnl)}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Avg PnL</span>
+                  <span className="text-muted-foreground">평균 손익</span>
                   <span className={data.singleDirection.avgPnlPerMarket >= 0 ? 'text-green-500' : 'text-red-500'}>
                     {formatCurrency(data.singleDirection.avgPnlPerMarket)}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Win Rate</span>
+                  <span className="text-muted-foreground">승률</span>
                   <span>{formatPercent(data.singleDirection.winRate)}</span>
                 </div>
               </div>
@@ -124,7 +124,7 @@ export function MarketSelectionCard({ data }: MarketSelectionCardProps) {
       {/* PnL Bar Chart */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-base">PnL Comparison</CardTitle>
+          <CardTitle className="text-base">손익 비교</CardTitle>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={250}>
@@ -141,8 +141,8 @@ export function MarketSelectionCard({ data }: MarketSelectionCardProps) {
                 formatter={(value: number | undefined) => [formatCurrency(value ?? 0)]}
               />
               <Legend />
-              <Bar dataKey="Hedged" fill={COLORS.hedged} radius={[4, 4, 0, 0]} />
-              <Bar dataKey="Single Direction" fill={COLORS.single} radius={[4, 4, 0, 0]} />
+              <Bar dataKey="헤지" fill={COLORS.hedged} radius={[4, 4, 0, 0]} />
+              <Bar dataKey="단방향" fill={COLORS.single} radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </CardContent>
@@ -151,12 +151,12 @@ export function MarketSelectionCard({ data }: MarketSelectionCardProps) {
       {/* Win Rate Comparison */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-base">Win Rate Comparison</CardTitle>
+          <CardTitle className="text-base">승률 비교</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 gap-8">
             <div className="space-y-2">
-              <p className="text-sm text-muted-foreground">Hedged</p>
+              <p className="text-sm text-muted-foreground">헤지</p>
               <p className="text-3xl font-bold" style={{ color: COLORS.hedged }}>
                 {formatPercent(data.hedged.winRate)}
               </p>
@@ -174,7 +174,7 @@ export function MarketSelectionCard({ data }: MarketSelectionCardProps) {
               </p>
             </div>
             <div className="space-y-2">
-              <p className="text-sm text-muted-foreground">Single Direction</p>
+              <p className="text-sm text-muted-foreground">단방향</p>
               <p className="text-3xl font-bold" style={{ color: COLORS.single }}>
                 {formatPercent(data.singleDirection.winRate)}
               </p>

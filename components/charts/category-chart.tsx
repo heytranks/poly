@@ -28,7 +28,7 @@ export function CategoryChart({ data }: CategoryChartProps) {
     return (
       <Card>
         <CardContent className="flex items-center justify-center h-48 text-muted-foreground">
-          No category data available
+          카테고리 데이터가 없습니다
         </CardContent>
       </Card>
     );
@@ -41,11 +41,10 @@ export function CategoryChart({ data }: CategoryChartProps) {
     value: c.tradeCount,
   }));
 
-  // Top 10 for PnL bar chart
+  // Top 10 for volume bar chart
   const barData = data.slice(0, 10).map((c) => ({
     name: c.category.length > 20 ? c.category.slice(0, 20) + '...' : c.category,
-    pnl: c.pnl,
-    winRate: c.winRate,
+    volume: c.dollarVolume,
   }));
 
   return (
@@ -53,7 +52,7 @@ export function CategoryChart({ data }: CategoryChartProps) {
       {/* Trade Distribution Pie */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-base">Trade Distribution by Market</CardTitle>
+          <CardTitle className="text-base">마켓별 거래 분포</CardTitle>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={300}>
@@ -82,10 +81,10 @@ export function CategoryChart({ data }: CategoryChartProps) {
         </CardContent>
       </Card>
 
-      {/* PnL Contribution Bar */}
+      {/* Volume Bar */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-base">PnL by Market</CardTitle>
+          <CardTitle className="text-base">마켓별 거래액</CardTitle>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={300}>
@@ -107,13 +106,9 @@ export function CategoryChart({ data }: CategoryChartProps) {
               />
               <Tooltip
                 {...TOOLTIP_STYLE}
-                formatter={(value: number | undefined) => [formatCurrency(value ?? 0), 'PnL']}
+                formatter={(value: number | undefined) => [formatCurrency(value ?? 0), '거래액']}
               />
-              <Bar dataKey="pnl" radius={[0, 4, 4, 0]}>
-                {barData.map((entry, i) => (
-                  <Cell key={i} fill={entry.pnl >= 0 ? '#22c55e' : '#ef4444'} />
-                ))}
-              </Bar>
+              <Bar dataKey="volume" fill="#7c3aed" radius={[0, 4, 4, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </CardContent>
@@ -122,19 +117,18 @@ export function CategoryChart({ data }: CategoryChartProps) {
       {/* Market Stats Table */}
       <Card className="lg:col-span-2">
         <CardHeader className="pb-2">
-          <CardTitle className="text-base">Market Performance Details</CardTitle>
+          <CardTitle className="text-base">마켓별 거래 상세</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-border text-muted-foreground">
-                  <th className="text-left py-2 pr-4">Market</th>
-                  <th className="text-right py-2 px-2">Trades</th>
-                  <th className="text-right py-2 px-2">$ Volume</th>
-                  <th className="text-right py-2 px-2">Shares</th>
-                  <th className="text-right py-2 px-2">PnL</th>
-                  <th className="text-right py-2 px-2">Win Rate</th>
+                  <th className="text-left py-2 pr-4">마켓</th>
+                  <th className="text-right py-2 px-2">거래 수</th>
+                  <th className="text-right py-2 px-2">거래액</th>
+                  <th className="text-right py-2 px-2">쉐어</th>
+                  <th className="text-right py-2 px-2">비중</th>
                 </tr>
               </thead>
               <tbody>
@@ -144,10 +138,7 @@ export function CategoryChart({ data }: CategoryChartProps) {
                     <td className="text-right py-2 px-2">{cat.tradeCount}</td>
                     <td className="text-right py-2 px-2">{formatCurrency(cat.dollarVolume)}</td>
                     <td className="text-right py-2 px-2">{cat.sharesVolume.toLocaleString()}</td>
-                    <td className={`text-right py-2 px-2 ${cat.pnl >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                      {formatCurrency(cat.pnl)}
-                    </td>
-                    <td className="text-right py-2 px-2">{formatPercent(cat.winRate)}</td>
+                    <td className="text-right py-2 px-2">{formatPercent(cat.percentage)}</td>
                   </tr>
                 ))}
               </tbody>

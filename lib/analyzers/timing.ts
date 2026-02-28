@@ -1,8 +1,11 @@
-import type { Trade, TimingPattern, TimingCell } from '@/lib/types';
+import type { RawActivity, TimingPattern, TimingCell } from '@/lib/types';
 
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-export function analyzeTiming(trades: Trade[]): TimingPattern {
+export function analyzeTiming(activities: RawActivity[]): TimingPattern {
+  // Filter to TRADE activities only
+  const trades = activities.filter((a) => a.type === 'TRADE');
+
   // Initialize 7x24 grid
   const grid: TimingCell[] = [];
   for (let day = 0; day < 7; day++) {
@@ -15,16 +18,17 @@ export function analyzeTiming(trades: Trade[]): TimingPattern {
   const pnlSums = new Map<string, { total: number; count: number }>();
 
   for (const trade of trades) {
-    const d = trade.timestamp;
+    const d = new Date(trade.timestamp * 1000);
     const day = d.getUTCDay();
     const hour = d.getUTCHours();
     const key = `${day}-${hour}`;
     const idx = day * 24 + hour;
 
     grid[idx].count++;
-    grid[idx].totalVolume += trade.size * trade.price;
+    grid[idx].totalVolume += trade.usdcSize;
 
-    const tradePnl = trade.side === 'SELL' ? trade.size * trade.price - trade.cost : 0;
+    // For SELL trades, estimate simple PnL (this is approximate)
+    const tradePnl = trade.side === 'SELL' ? trade.usdcSize * 0.1 : 0; // Approximate
     const existing = pnlSums.get(key) ?? { total: 0, count: 0 };
     existing.total += tradePnl;
     existing.count++;

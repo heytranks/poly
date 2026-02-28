@@ -1,29 +1,26 @@
-import type { Trade, RawClosedPosition, DirectionAnalysis } from '@/lib/types';
+import type { RawActivity, DirectionAnalysis } from '@/lib/types';
 
-export function analyzeDirection(
-  trades: Trade[],
-  closedPositions: RawClosedPosition[]
-): DirectionAnalysis {
-  const yesTrades = trades.filter((t) => t.outcome === 'Yes');
-  const noTrades = trades.filter((t) => t.outcome === 'No');
+export function analyzeDirection(activities: RawActivity[]): DirectionAnalysis {
+  const trades = activities.filter((a) => a.type === 'TRADE');
 
-  // PnL by direction from closed positions
-  const yesPositions = closedPositions.filter((p) => p.outcome === 'Yes');
-  const noPositions = closedPositions.filter((p) => p.outcome === 'No');
-
-  const yesPnl = yesPositions.reduce((s, p) => s + p.realizedPnl, 0);
-  const noPnl = noPositions.reduce((s, p) => s + p.realizedPnl, 0);
-
-  const yesWins = yesPositions.filter((p) => p.realizedPnl > 0).length;
-  const noWins = noPositions.filter((p) => p.realizedPnl > 0).length;
-
-  const yesWinRate = yesPositions.length > 0 ? yesWins / yesPositions.length : 0;
-  const noWinRate = noPositions.length > 0 ? noWins / noPositions.length : 0;
+  const yesTrades = trades.filter((t) => t.outcomeIndex === 0);
+  const noTrades = trades.filter((t) => t.outcomeIndex === 1);
 
   const yesCount = yesTrades.length;
   const noCount = noTrades.length;
-  const total = yesCount + noCount;
+  const yesVolume = yesTrades.reduce((s, t) => s + t.usdcSize, 0);
+  const noVolume = noTrades.reduce((s, t) => s + t.usdcSize, 0);
 
+  const yesBuys = yesTrades.filter((t) => t.side === 'BUY');
+  const noBuys = noTrades.filter((t) => t.side === 'BUY');
+  const avgYesPrice = yesBuys.length > 0
+    ? yesBuys.reduce((s, t) => s + t.price, 0) / yesBuys.length
+    : 0;
+  const avgNoPrice = noBuys.length > 0
+    ? noBuys.reduce((s, t) => s + t.price, 0) / noBuys.length
+    : 0;
+
+  const total = yesCount + noCount;
   let bias: 'YES' | 'NO' | 'NEUTRAL' = 'NEUTRAL';
   if (total > 0) {
     const yesRatio = yesCount / total;
@@ -34,10 +31,18 @@ export function analyzeDirection(
   return {
     yesCount,
     noCount,
-    yesPnl: Math.round(yesPnl * 100) / 100,
-    noPnl: Math.round(noPnl * 100) / 100,
-    yesWinRate,
-    noWinRate,
+    yesVolume: round2(yesVolume),
+    noVolume: round2(noVolume),
+    avgYesPrice: round4(avgYesPrice),
+    avgNoPrice: round4(avgNoPrice),
     bias,
   };
+}
+
+function round2(n: number): number {
+  return Math.round(n * 100) / 100;
+}
+
+function round4(n: number): number {
+  return Math.round(n * 10000) / 10000;
 }

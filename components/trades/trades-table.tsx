@@ -33,7 +33,7 @@ const columns: ColumnDef<Trade>[] = [
     accessorKey: 'timestamp',
     header: ({ column }) => (
       <Button variant="ghost" size="sm" onClick={() => column.toggleSorting()}>
-        Date <ArrowUpDown className="ml-1 h-3 w-3" />
+        날짜 <ArrowUpDown className="ml-1 h-3 w-3" />
       </Button>
     ),
     cell: ({ row }) => (
@@ -42,7 +42,7 @@ const columns: ColumnDef<Trade>[] = [
   },
   {
     accessorKey: 'title',
-    header: 'Market',
+    header: '마켓',
     cell: ({ row }) => (
       <span className="text-sm font-medium truncate max-w-[200px] block" title={row.getValue('title')}>
         {row.getValue('title')}
@@ -51,7 +51,7 @@ const columns: ColumnDef<Trade>[] = [
   },
   {
     accessorKey: 'side',
-    header: 'Side',
+    header: '매수/매도',
     cell: ({ row }) => {
       const side = row.getValue('side') as string;
       return (
@@ -63,7 +63,7 @@ const columns: ColumnDef<Trade>[] = [
   },
   {
     accessorKey: 'outcome',
-    header: 'Direction',
+    header: '방향',
     cell: ({ row }) => {
       const outcome = row.getValue('outcome') as string;
       return (
@@ -77,7 +77,7 @@ const columns: ColumnDef<Trade>[] = [
     accessorKey: 'price',
     header: ({ column }) => (
       <Button variant="ghost" size="sm" onClick={() => column.toggleSorting()}>
-        Price <ArrowUpDown className="ml-1 h-3 w-3" />
+        가격 <ArrowUpDown className="ml-1 h-3 w-3" />
       </Button>
     ),
     cell: ({ row }) => <span>{(row.getValue('price') as number).toFixed(2)}</span>,
@@ -86,7 +86,7 @@ const columns: ColumnDef<Trade>[] = [
     accessorKey: 'size',
     header: ({ column }) => (
       <Button variant="ghost" size="sm" onClick={() => column.toggleSorting()}>
-        Size <ArrowUpDown className="ml-1 h-3 w-3" />
+        금액 <ArrowUpDown className="ml-1 h-3 w-3" />
       </Button>
     ),
     cell: ({ row }) => <span>{formatCurrency((row.getValue('size') as number) * (row.original.price))}</span>,
@@ -124,13 +124,13 @@ export function TradesTable({ trades }: TradesTableProps) {
     <Card className="p-4">
       <div className="flex items-center justify-between mb-4">
         <Input
-          placeholder="Filter markets..."
+          placeholder="마켓 검색..."
           value={globalFilter}
           onChange={(e) => setGlobalFilter(e.target.value)}
           className="max-w-xs h-9"
         />
         <span className="text-sm text-muted-foreground">
-          {table.getFilteredRowModel().rows.length} trades
+          {table.getFilteredRowModel().rows.length}건
         </span>
       </div>
 
@@ -163,7 +163,7 @@ export function TradesTable({ trades }: TradesTableProps) {
             ) : (
               <TableRow>
                 <TableCell colSpan={columns.length} className="h-24 text-center text-muted-foreground">
-                  No trades found.
+                  거래 내역이 없습니다.
                 </TableCell>
               </TableRow>
             )}
@@ -173,7 +173,7 @@ export function TradesTable({ trades }: TradesTableProps) {
 
       <div className="flex items-center justify-between mt-4">
         <span className="text-sm text-muted-foreground">
-          Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
+          {table.getState().pagination.pageIndex + 1} / {table.getPageCount()} 페이지
         </span>
         <div className="flex gap-2">
           <Button

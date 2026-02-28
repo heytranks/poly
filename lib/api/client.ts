@@ -1,5 +1,4 @@
 interface FetchOptions {
-  revalidate?: number;
   headers?: Record<string, string>;
 }
 
@@ -10,18 +9,15 @@ export async function apiFetch<T>(
   url: string,
   options: FetchOptions = {}
 ): Promise<T> {
-  const { revalidate, headers } = options;
+  const { headers } = options;
 
-  const fetchInit: RequestInit & { next?: { revalidate: number } } = {
+  const fetchInit: RequestInit = {
+    cache: 'no-store',
     headers: {
       Accept: 'application/json',
       ...headers,
     },
   };
-
-  if (revalidate !== undefined) {
-    fetchInit.next = { revalidate };
-  }
 
   let lastError: { status: number; message: string } | null = null;
 

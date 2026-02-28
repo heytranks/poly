@@ -1,6 +1,6 @@
 import type {
-  Trade,
-  RawClosedPosition,
+  RawActivity,
+  MarketPnL,
   PairCostAnalysis,
   PairCostResult,
   HedgeTimingResult,
@@ -47,14 +47,15 @@ interface HedgePairData {
   conditionId: string;
   title: string;
   slug: string;
-  yesTrades: Trade[];
-  noTrades: Trade[];
+  yesTrades: RawActivity[];
+  noTrades: RawActivity[];
 }
 
-/** BUY 트레이드를 conditionId별로 그룹, 양쪽 다 있는 것만 반환 */
-function getHedgePairs(trades: Trade[]): HedgePairData[] {
-  const buyTrades = trades.filter((t) => t.side === 'BUY');
-  const grouped = new Map<string, Trade[]>();
+/** BUY trades grouped by conditionId, only return pairs with both sides */
+function getHedgePairs(activities: RawActivity[]): HedgePairData[] {
+  const buyTrades = activities.filter((a) => a.type === 'TRADE' && a.side === 'BUY');
+  const grouped = new Map<string, RawActivity[]>();
+
   for (const trade of buyTrades) {
     if (!grouped.has(trade.conditionId)) grouped.set(trade.conditionId, []);
     grouped.get(trade.conditionId)!.push(trade);
@@ -62,8 +63,8 @@ function getHedgePairs(trades: Trade[]): HedgePairData[] {
 
   const pairs: HedgePairData[] = [];
   for (const [conditionId, condTrades] of Array.from(grouped.entries())) {
-    const yesTrades = condTrades.filter((t: Trade) => t.outcomeIndex === 0);
-    const noTrades = condTrades.filter((t: Trade) => t.outcomeIndex === 1);
+    const yesTrades = condTrades.filter((t) => t.outcomeIndex === 0);
+    const noTrades = condTrades.filter((t) => t.outcomeIndex === 1);
     if (yesTrades.length === 0 || noTrades.length === 0) continue;
     pairs.push({ conditionId, title: condTrades[0].title, slug: condTrades[0].slug, yesTrades, noTrades });
   }
@@ -73,7 +74,7 @@ function getHedgePairs(trades: Trade[]): HedgePairData[] {
 function round2(n: number): number { return Math.round(n * 100) / 100; }
 function round4(n: number): number { return Math.round(n * 10000) / 10000; }
 
-function vwap(trades: Trade[]): number {
+function vwap(trades: RawActivity[]): number {
   const totalSize = trades.reduce((s, t) => s + t.size, 0);
   if (totalSize === 0) return 0;
   return trades.reduce((s, t) => s + t.price * t.size, 0) / totalSize;
@@ -92,14 +93,14 @@ function median(arr: number[]): number {
 
 function analyzeHedgeTiming(hedgePairs: HedgePairData[]): HedgeTimingAnalysis {
   const pairs: HedgeTimingResult[] = hedgePairs.map((hp) => {
-    const firstYesBuy = hp.yesTrades.reduce((e: Trade, t: Trade) =>
+    const firstYesBuy = hp.yesTrades.reduce((e, t) =>
       t.timestamp < e.timestamp ? t : e
     );
-    const firstNoBuy = hp.noTrades.reduce((e: Trade, t: Trade) =>
+    const firstNoBuy = hp.noTrades.reduce((e, t) =>
       t.timestamp < e.timestamp ? t : e
     );
 
-    const gapMs = Math.abs(firstYesBuy.timestamp.getTime() - firstNoBuy.timestamp.getTime());
+    const gapMs = Math.abs(firstYesBuy.timestamp - firstNoBuy.timestamp) * 1000;
     const gapMinutes = gapMs / (1000 * 60);
     const firstLeg: 'YES' | 'NO' = firstYesBuy.timestamp <= firstNoBuy.timestamp ? 'YES' : 'NO';
 
@@ -107,8 +108,8 @@ function analyzeHedgeTiming(hedgePairs: HedgePairData[]): HedgeTimingAnalysis {
       conditionId: hp.conditionId,
       title: hp.title,
       slug: hp.slug,
-      firstYesBuy: firstYesBuy.timestamp,
-      firstNoBuy: firstNoBuy.timestamp,
+      firstYesBuy: new Date(firstYesBuy.timestamp * 1000),
+      firstNoBuy: new Date(firstNoBuy.timestamp * 1000),
       gapMinutes: round2(gapMinutes),
       category: categorizeGap(gapMinutes),
       firstLeg,
@@ -194,22 +195,17 @@ function analyzeHedgeEfficiency(pairCost: PairCostAnalysis): HedgeEfficiencyAnal
 // ============================================================
 
 function analyzeMarketSelection(
-  closedPositions: RawClosedPosition[],
+  marketPnLs: Map<string, MarketPnL>,
   pairCost: PairCostAnalysis
 ): MarketSelectionAnalysis {
   const hedgedConditionIds = new Set(pairCost.pairs.map((p) => p.conditionId));
-
-  const pnlByCondition = new Map<string, number>();
-  for (const pos of closedPositions) {
-    const current = pnlByCondition.get(pos.conditionId) ?? 0;
-    pnlByCondition.set(pos.conditionId, current + pos.realizedPnl);
-  }
 
   function buildStats(label: string, conditionIds: string[]): MarketGroupStats {
     const marketCount = conditionIds.length;
     let totalPnl = 0, winCount = 0, lossCount = 0;
     for (const cid of conditionIds) {
-      const pnl = pnlByCondition.get(cid) ?? 0;
+      const market = marketPnLs.get(cid);
+      const pnl = market?.realizedPnl ?? 0;
       totalPnl += pnl;
       if (pnl > 0) winCount++; else lossCount++;
     }
@@ -222,7 +218,9 @@ function analyzeMarketSelection(
     };
   }
 
-  const allConditionIds = Array.from(pnlByCondition.keys());
+  const closedMarkets = Array.from(marketPnLs.values()).filter((m) => !m.isOpen);
+  const allConditionIds = closedMarkets.map((m) => m.conditionId);
+
   return {
     hedged: buildStats('Hedged', allConditionIds.filter((id) => hedgedConditionIds.has(id))),
     singleDirection: buildStats('Single Direction', allConditionIds.filter((id) => !hedgedConditionIds.has(id))),
@@ -230,7 +228,7 @@ function analyzeMarketSelection(
 }
 
 // ============================================================
-// 4. Leg Entry Price Analysis (NEW)
+// 4. Leg Entry Price Analysis
 // ============================================================
 
 function analyzeLegEntry(hedgePairs: HedgePairData[]): LegEntryAnalysis {
@@ -241,8 +239,8 @@ function analyzeLegEntry(hedgePairs: HedgePairData[]): LegEntryAnalysis {
     const noSize = hp.noTrades.reduce((s, t) => s + t.size, 0);
 
     // Determine first leg by earliest trade
-    const firstYes = hp.yesTrades.reduce((e: Trade, t: Trade) => t.timestamp < e.timestamp ? t : e);
-    const firstNo = hp.noTrades.reduce((e: Trade, t: Trade) => t.timestamp < e.timestamp ? t : e);
+    const firstYes = hp.yesTrades.reduce((e, t) => t.timestamp < e.timestamp ? t : e);
+    const firstNo = hp.noTrades.reduce((e, t) => t.timestamp < e.timestamp ? t : e);
     const firstLeg: 'YES' | 'NO' = firstYes.timestamp <= firstNo.timestamp ? 'YES' : 'NO';
 
     const firstLegAvgPrice = firstLeg === 'YES' ? yesVwap : noVwap;
@@ -305,7 +303,7 @@ function analyzeLegEntry(hedgePairs: HedgePairData[]): LegEntryAnalysis {
 }
 
 // ============================================================
-// 5. Spread Pattern Analysis (NEW)
+// 5. Spread Pattern Analysis
 // ============================================================
 
 function analyzeSpreadPattern(pairCostPairs: PairCostResult[]): SpreadPatternAnalysis {
@@ -341,7 +339,7 @@ function analyzeSpreadPattern(pairCostPairs: PairCostResult[]): SpreadPatternAna
 }
 
 // ============================================================
-// 6. Time-Price Correlation Analysis (NEW)
+// 6. Time-Price Correlation Analysis
 // ============================================================
 
 function analyzeTimePrice(hedgePairs: HedgePairData[]): TimePriceAnalysis {
@@ -349,11 +347,11 @@ function analyzeTimePrice(hedgePairs: HedgePairData[]): TimePriceAnalysis {
     const yesVwap = vwap(hp.yesTrades);
     const noVwap = vwap(hp.noTrades);
 
-    const firstYes = hp.yesTrades.reduce((e: Trade, t: Trade) => t.timestamp < e.timestamp ? t : e);
-    const firstNo = hp.noTrades.reduce((e: Trade, t: Trade) => t.timestamp < e.timestamp ? t : e);
+    const firstYes = hp.yesTrades.reduce((e, t) => t.timestamp < e.timestamp ? t : e);
+    const firstNo = hp.noTrades.reduce((e, t) => t.timestamp < e.timestamp ? t : e);
     const firstLeg: 'YES' | 'NO' = firstYes.timestamp <= firstNo.timestamp ? 'YES' : 'NO';
 
-    const gapMs = Math.abs(firstYes.timestamp.getTime() - firstNo.timestamp.getTime());
+    const gapMs = Math.abs(firstYes.timestamp - firstNo.timestamp) * 1000;
     const gapMinutes = gapMs / (1000 * 60);
     const pairCost = yesVwap + noVwap;
 
@@ -414,15 +412,15 @@ function analyzeTimePrice(hedgePairs: HedgePairData[]): TimePriceAnalysis {
 // ============================================================
 
 export function analyzeHedging(
-  trades: Trade[],
-  closedPositions: RawClosedPosition[],
+  activities: RawActivity[],
+  marketPnLs: Map<string, MarketPnL>,
   pairCost: PairCostAnalysis
 ): HedgeAnalysis {
-  const hedgePairs = getHedgePairs(trades);
+  const hedgePairs = getHedgePairs(activities);
 
   const timing = analyzeHedgeTiming(hedgePairs);
   const efficiency = analyzeHedgeEfficiency(pairCost);
-  const marketSelection = analyzeMarketSelection(closedPositions, pairCost);
+  const marketSelection = analyzeMarketSelection(marketPnLs, pairCost);
   const legEntry = analyzeLegEntry(hedgePairs);
   const spreadPattern = analyzeSpreadPattern(pairCost.pairs);
   const timePrice = analyzeTimePrice(hedgePairs);

@@ -2,6 +2,8 @@
 // Raw API Response Types
 // ============================================================
 
+export type ActivityType = 'TRADE' | 'REDEEM' | 'SPLIT' | 'MERGE' | 'REWARD' | 'CONVERSION';
+
 export interface RawTrade {
   side: 'BUY' | 'SELL';
   asset: string;
@@ -19,16 +21,20 @@ export interface RawTrade {
 }
 
 export interface RawActivity {
-  type: string;
-  side: 'BUY' | 'SELL';
+  type: ActivityType;
+  side: 'BUY' | 'SELL' | '';
   size: number;
+  usdcSize: number;           // USDC amount (cash flow)
   price: number;
   conditionId: string;
-  timestamp: string;
+  timestamp: number;          // Unix epoch (seconds)
   transactionHash: string;
   title: string;
   slug: string;
+  icon: string;
+  eventSlug: string;
   outcome: string;
+  outcomeIndex: number;
 }
 
 export interface RawPosition {
@@ -150,13 +156,42 @@ export interface ClosedPosition {
   outcome: string;
 }
 
+// Position-level PnL calculated from activities
+export interface PositionPnL {
+  conditionId: string;
+  title: string;
+  slug: string;
+  icon: string;
+  outcome: string;
+  outcomeIndex: number;
+  totalBought: number;        // total USDC spent (BUY + SPLIT)
+  totalSold: number;          // total USDC received (SELL + MERGE + REDEEM)
+  realizedPnl: number;        // totalSold - totalBought
+  avgBuyPrice: number;        // VWAP of buys
+  isOpen: boolean;            // false if position fully closed
+  firstActivityTime: Date;
+  lastActivityTime: Date;
+}
+
+// Aggregate market PnL (summing all outcomes)
+export interface MarketPnL {
+  conditionId: string;
+  title: string;
+  slug: string;
+  icon: string;
+  realizedPnl: number;
+  isOpen: boolean;
+  positionCount: number;
+  firstActivityTime: Date;
+  lastActivityTime: Date;
+}
+
 export interface DataCoverage {
   tradeCount: number;
+  activityCount: number;
   closedPositionCount: number;
-  oldestTradeDate: string | null;
-  newestTradeDate: string | null;
-  oldestClosedDate: string | null;
-  newestClosedDate: string | null;
+  oldestActivityDate: string | null;
+  newestActivityDate: string | null;
 }
 
 export interface UserProfile {
@@ -192,6 +227,7 @@ export interface PnlAnalysis {
   maxSingleWin: number;
   maxSingleLoss: number;
   profitFactor: number;
+  avgPositionSize: number;   // average USDC invested per position
 }
 
 export interface WinRateAnalysis {
@@ -249,18 +285,16 @@ export interface CategoryBreakdown {
   tradeCount: number;
   sharesVolume: number;
   dollarVolume: number;
-  pnl: number;
-  winRate: number;
   percentage: number;
 }
 
 export interface DirectionAnalysis {
   yesCount: number;
   noCount: number;
-  yesPnl: number;
-  noPnl: number;
-  yesWinRate: number;
-  noWinRate: number;
+  yesVolume: number;
+  noVolume: number;
+  avgYesPrice: number;
+  avgNoPrice: number;
   bias: 'YES' | 'NO' | 'NEUTRAL';
 }
 
@@ -269,8 +303,7 @@ export interface EntryPriceBucket {
   min: number;
   max: number;
   count: number;
-  avgPnl: number;
-  winRate: number;
+  totalVolume: number;
 }
 
 // ============================================================
@@ -442,6 +475,58 @@ export interface HedgeAnalysis {
   timePrice: TimePriceAnalysis;
 }
 
+// ============================================================
+// Bot Analysis Types (UpDown 5m Markets)
+// ============================================================
+
+export interface UpDownMarketMeta {
+  slug: string;
+  coin: string;
+  windowStartSec: number;
+  outcomeIndex: number;       // 0=Up, 1=Down
+  entryPrice: number;
+  usdcSize: number;
+  conditionId: string;
+}
+
+export interface BotOverview {
+  totalMarkets: number;
+  upBets: number;
+  downBets: number;
+  avgEntryOdds: number;
+  totalVolume: number;
+}
+
+export interface EntryOddsBucket {
+  range: string;
+  min: number;
+  max: number;
+  count: number;
+  totalVolume: number;
+}
+
+export interface CoinBreakdown {
+  coin: string;
+  count: number;
+  totalVolume: number;
+}
+
+export interface BotAnalysis {
+  overview: BotOverview;
+  entryOdds: EntryOddsBucket[];
+  coinBreakdown: CoinBreakdown[];
+  markets: UpDownMarketMeta[];
+}
+
+export interface BinanceKline {
+  openTime: number;           // ms
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  closeTime: number;          // ms
+}
+
 export interface AnalysisSummary {
   pnl: PnlAnalysis;
   winRate: WinRateAnalysis;
@@ -451,4 +536,5 @@ export interface AnalysisSummary {
   direction?: DirectionAnalysis;
   entryPrice?: EntryPriceBucket[];
   hedgeAnalysis?: HedgeAnalysis;
+  botAnalysis?: BotAnalysis;
 }

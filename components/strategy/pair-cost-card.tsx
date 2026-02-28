@@ -15,7 +15,7 @@ export function PairCostCard({ analysis }: PairCostCardProps) {
     return (
       <Card>
         <CardContent className="flex items-center justify-center h-48 text-muted-foreground">
-          No pair trading detected. This user doesn&apos;t appear to trade both sides of markets.
+          양방향 거래가 감지되지 않았습니다. 이 유저는 마켓의 양쪽을 동시에 거래하지 않는 것 같습니다.
         </CardContent>
       </Card>
     );
@@ -26,24 +26,25 @@ export function PairCostCard({ analysis }: PairCostCardProps) {
       {/* Summary stats */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-lg">Pair Cost Analysis</CardTitle>
+          <CardTitle className="text-lg">페어 코스트 분석</CardTitle>
+          <p className="text-xs text-muted-foreground">YES+NO 양쪽 매수로 확정 수익을 노리는 전략</p>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div>
-              <p className="text-sm text-muted-foreground">Total Pairs</p>
+              <p className="text-sm text-muted-foreground">전체 페어</p>
               <p className="text-xl font-bold">{analysis.totalPairs}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Locked Pairs</p>
+              <p className="text-sm text-muted-foreground">수익 확정 페어</p>
               <p className="text-xl font-bold text-green-500">{analysis.lockedPairs}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Total Locked Profit</p>
+              <p className="text-sm text-muted-foreground">확정 수익 합계</p>
               <p className="text-xl font-bold text-green-500">{formatCurrency(analysis.totalLockedProfit)}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Usage Rate</p>
+              <p className="text-sm text-muted-foreground">양방향 비율</p>
               <p className="text-xl font-bold">{formatPercent(analysis.usageRate)}</p>
             </div>
           </div>
@@ -53,7 +54,7 @@ export function PairCostCard({ analysis }: PairCostCardProps) {
       {/* Top pairs */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-base">Top Pair Trades</CardTitle>
+          <CardTitle className="text-base">주요 페어 거래</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           {analysis.pairs.slice(0, 10).map((pair, idx) => (
@@ -65,7 +66,7 @@ export function PairCostCard({ analysis }: PairCostCardProps) {
                     <p className="text-sm font-medium truncate" title={pair.title}>{pair.title}</p>
                     {pair.isLocked && (
                       <Badge className="bg-green-500/20 text-green-500 border-green-500/30 shrink-0">
-                        Locked Profit
+                        수익 확정
                       </Badge>
                     )}
                   </div>
@@ -76,7 +77,7 @@ export function PairCostCard({ analysis }: PairCostCardProps) {
                     <span>
                       NO: {pair.avgNoPrice.toFixed(2)} ({pair.noSize.toFixed(0)} shares)
                     </span>
-                    <span>Hedged: {pair.hedgedSize.toFixed(0)} shares</span>
+                    <span>헤지: {pair.hedgedSize.toFixed(0)} 쉐어</span>
                   </div>
                 </div>
                 <div className="text-right shrink-0">

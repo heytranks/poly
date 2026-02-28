@@ -30,25 +30,22 @@ export function ProfileHeader({ profile }: ProfileHeaderProps) {
           {truncateAddress(profile.address)}
         </p>
         <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
-          <span>Portfolio: <strong className="text-foreground">{formatCurrency(profile.portfolioValue)}</strong></span>
-          <span>$ Volume: <strong className="text-foreground">{formatCurrency(profile.dollarVolume)}</strong></span>
-          <span>Shares: <strong className="text-foreground">{profile.sharesVolume.toLocaleString()}</strong></span>
-          <span>Markets: <strong className="text-foreground">{profile.markets}</strong></span>
+          <span>포트폴리오: <strong className="text-foreground">{formatCurrency(profile.portfolioValue)}</strong></span>
+          <span>거래액: <strong className="text-foreground">{formatCurrency(profile.dollarVolume)}</strong></span>
+          <span>쉐어: <strong className="text-foreground">{profile.sharesVolume.toLocaleString()}</strong></span>
+          <span>마켓: <strong className="text-foreground">{profile.markets}</strong></span>
         </div>
         {profile.dataCoverage && (
           <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
             <span>
-              Data: {profile.dataCoverage.tradeCount.toLocaleString()} trades
-              {profile.dataCoverage.oldestTradeDate && profile.dataCoverage.newestTradeDate && (
-                <> ({profile.dataCoverage.oldestTradeDate} ~ {profile.dataCoverage.newestTradeDate})</>
+              활동 {profile.dataCoverage.activityCount.toLocaleString()}건
+              {profile.dataCoverage.oldestActivityDate && profile.dataCoverage.newestActivityDate && (
+                <> ({profile.dataCoverage.oldestActivityDate} ~ {profile.dataCoverage.newestActivityDate})</>
               )}
             </span>
             <span className="text-muted-foreground/50">|</span>
             <span>
-              {profile.dataCoverage.closedPositionCount.toLocaleString()} closed positions
-              {profile.dataCoverage.oldestClosedDate && profile.dataCoverage.newestClosedDate && (
-                <> ({profile.dataCoverage.oldestClosedDate} ~ {profile.dataCoverage.newestClosedDate})</>
-              )}
+              거래 {profile.dataCoverage.tradeCount.toLocaleString()}건, 종료 마켓 {profile.dataCoverage.closedPositionCount.toLocaleString()}건
             </span>
           </div>
         )}

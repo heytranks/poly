@@ -1,10 +1,11 @@
-import type { Trade, PairCostResult, PairCostAnalysis } from '@/lib/types';
+import type { RawActivity, PairCostResult, PairCostAnalysis } from '@/lib/types';
 
-export function analyzePairCost(trades: Trade[]): PairCostAnalysis {
-  // Group BUY trades by conditionId
-  const buyTrades = trades.filter((t) => t.side === 'BUY');
-  const grouped = new Map<string, Trade[]>();
+export function analyzePairCost(activities: RawActivity[]): PairCostAnalysis {
+  // Filter to TRADE BUY activities only
+  const buyTrades = activities.filter((a) => a.type === 'TRADE' && a.side === 'BUY');
 
+  // Group by conditionId
+  const grouped = new Map<string, RawActivity[]>();
   for (const trade of buyTrades) {
     const key = trade.conditionId;
     if (!grouped.has(key)) grouped.set(key, []);

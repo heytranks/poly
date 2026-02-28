@@ -4,43 +4,37 @@ import type { AnalysisSummary } from '@/lib/types';
 
 interface SummaryCardsProps {
   analysis: AnalysisSummary;
-  tradeCount: number;
 }
 
-export function SummaryCards({ analysis, tradeCount }: SummaryCardsProps) {
+export function SummaryCards({ analysis }: SummaryCardsProps) {
   const { pnl, winRate } = analysis;
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
       <StatCard
-        label="Total PnL"
+        label="총 손익"
         value={formatCurrency(pnl.totalPnl)}
-        subValue={`Realized: ${formatCurrency(pnl.realizedPnl)}`}
+        subValue={`실현 손익: ${formatCurrency(pnl.realizedPnl)}`}
         trend={pnl.totalPnl >= 0 ? 'up' : 'down'}
       />
       <StatCard
-        label="Win Rate"
+        label="승률"
         value={formatPercent(winRate.winRate)}
-        subValue={`${winRate.wins}W / ${winRate.losses}L`}
+        subValue={`${winRate.wins}승 / ${winRate.losses}패 (${winRate.totalClosed} 마켓)`}
         trend={winRate.winRate >= 0.5 ? 'up' : 'down'}
       />
       <StatCard
-        label="Trades"
-        value={tradeCount.toLocaleString()}
-        subValue={`${winRate.totalClosed} closed positions`}
+        label="마켓당 평균 투입"
+        value={formatCurrency(pnl.avgPositionSize)}
+        subValue={`기대값: ${formatCurrency(winRate.expectancy)}`}
       />
       <StatCard
-        label="Avg Position"
-        value={formatCurrency(winRate.totalClosed > 0 ? pnl.realizedPnl / winRate.totalClosed : 0)}
-        subValue={`Expectancy: ${formatCurrency(winRate.expectancy)}`}
-      />
-      <StatCard
-        label="Best Trade"
+        label="최대 수익 마켓"
         value={formatCurrency(pnl.maxSingleWin)}
         trend="up"
       />
       <StatCard
-        label="Worst Trade"
+        label="최대 손실 마켓"
         value={formatCurrency(pnl.maxSingleLoss)}
         trend="down"
       />

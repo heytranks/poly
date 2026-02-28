@@ -1,4 +1,4 @@
-import type { Trade, RawClosedPosition, EntryPriceBucket } from '@/lib/types';
+import type { RawActivity, EntryPriceBucket } from '@/lib/types';
 
 const BUCKETS = [
   { range: '0-10c', min: 0, max: 0.1 },
@@ -13,28 +13,20 @@ const BUCKETS = [
   { range: '90-100c', min: 0.9, max: 1.01 },
 ];
 
-export function analyzeEntryPrice(
-  _trades: Trade[],
-  closedPositions: RawClosedPosition[]
-): EntryPriceBucket[] {
-  return BUCKETS.map((bucket) => {
-    const positions = closedPositions.filter(
-      (p) => p.avgPrice >= bucket.min && p.avgPrice < bucket.max
-    );
+export function analyzeEntryPrice(activities: RawActivity[]): EntryPriceBucket[] {
+  const buys = activities.filter((a) => a.type === 'TRADE' && a.side === 'BUY' && a.price > 0);
 
-    const count = positions.length;
-    const totalPnl = positions.reduce((s, p) => s + p.realizedPnl, 0);
-    const avgPnl = count > 0 ? totalPnl / count : 0;
-    const wins = positions.filter((p) => p.realizedPnl > 0).length;
-    const winRate = count > 0 ? wins / count : 0;
+  return BUCKETS.map((bucket) => {
+    const matching = buys.filter((a) => a.price >= bucket.min && a.price < bucket.max);
+    const count = matching.length;
+    const totalVolume = matching.reduce((s, a) => s + a.usdcSize, 0);
 
     return {
       range: bucket.range,
       min: bucket.min,
       max: bucket.max,
       count,
-      avgPnl: Math.round(avgPnl * 100) / 100,
-      winRate,
+      totalVolume: Math.round(totalVolume * 100) / 100,
     };
   });
 }

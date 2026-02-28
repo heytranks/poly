@@ -12,7 +12,6 @@ import {
   ReferenceLine,
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { TOOLTIP_STYLE } from '@/lib/constants';
 import { formatPercent } from '@/lib/utils';
 import type { SpreadPatternAnalysis } from '@/lib/types';
 
@@ -39,7 +38,7 @@ function CustomTooltip({ active, payload }: any) {
       <p>Pair Cost: <span style={{ color: d.pairCost < 1 ? '#22c55e' : '#ef4444' }}>
         {d.pairCost.toFixed(4)}
       </span></p>
-      <p>Hedged: {d.hedgedSize.toFixed(0)} shares</p>
+      <p>헤지: {d.hedgedSize.toFixed(0)} 쉐어</p>
     </div>
   );
 }
@@ -49,7 +48,7 @@ export function SpreadPatternCard({ data }: SpreadPatternCardProps) {
     return (
       <Card>
         <CardContent className="flex items-center justify-center h-48 text-muted-foreground">
-          No spread pattern data available
+          스프레드 패턴 데이터가 없습니다
         </CardContent>
       </Card>
     );
@@ -63,30 +62,31 @@ export function SpreadPatternCard({ data }: SpreadPatternCardProps) {
       {/* Summary */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-lg">YES + NO Price Spread</CardTitle>
+          <CardTitle className="text-lg">YES + NO 가격 스프레드</CardTitle>
+          <p className="text-xs text-muted-foreground">양쪽 매수가의 합이 1 미만이면 확정 수익</p>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div>
-              <p className="text-sm text-muted-foreground">Avg YES Price</p>
+              <p className="text-sm text-muted-foreground">평균 YES 가격</p>
               <p className="text-xl font-bold text-green-500">
                 {(data.avgYesPrice * 100).toFixed(1)}c
               </p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Avg NO Price</p>
+              <p className="text-sm text-muted-foreground">평균 NO 가격</p>
               <p className="text-xl font-bold text-red-400">
                 {(data.avgNoPrice * 100).toFixed(1)}c
               </p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Avg Pair Cost</p>
+              <p className="text-sm text-muted-foreground">평균 페어 코스트</p>
               <p className={`text-xl font-bold ${data.avgPairCost < 1 ? 'text-green-500' : 'text-red-500'}`}>
                 {data.avgPairCost.toFixed(4)}
               </p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Profitable Rate</p>
+              <p className="text-sm text-muted-foreground">수익 비율</p>
               <p className="text-xl font-bold text-green-500">
                 {formatPercent(data.profitableRate)}
               </p>
@@ -102,7 +102,7 @@ export function SpreadPatternCard({ data }: SpreadPatternCardProps) {
       <Card>
         <CardHeader className="pb-2">
           <CardTitle className="text-base">
-            YES vs NO Entry Price (below diagonal = profit)
+            YES vs NO 진입가 (대각선 아래 = 수익)
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -143,7 +143,7 @@ export function SpreadPatternCard({ data }: SpreadPatternCardProps) {
             </ScatterChart>
           </ResponsiveContainer>
           <p className="text-xs text-muted-foreground text-center mt-2">
-            Yellow dashed line = pair cost $1.00 (break-even). Green dots below = locked profit.
+            노란 점선 = 페어 코스트 $1.00 (손익분기). 아래쪽 초록점 = 확정 수익.
           </p>
         </CardContent>
       </Card>

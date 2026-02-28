@@ -66,17 +66,17 @@ export function TimePriceCard({ data }: TimePriceCardProps) {
     return (
       <Card>
         <CardContent className="flex items-center justify-center h-48 text-muted-foreground">
-          No time-price data available
+          시간-가격 데이터가 없습니다
         </CardContent>
       </Card>
     );
   }
 
   const corrLabel =
-    Math.abs(data.correlation) < 0.2 ? 'No correlation' :
-    Math.abs(data.correlation) < 0.5 ? 'Weak' :
-    Math.abs(data.correlation) < 0.7 ? 'Moderate' : 'Strong';
-  const corrDir = data.correlation > 0 ? 'positive' : data.correlation < 0 ? 'negative' : '';
+    Math.abs(data.correlation) < 0.2 ? '상관없음' :
+    Math.abs(data.correlation) < 0.5 ? '약한' :
+    Math.abs(data.correlation) < 0.7 ? '보통' : '강한';
+  const corrDir = data.correlation > 0 ? '양의 상관' : data.correlation < 0 ? '음의 상관' : '';
 
   // Chart data: avg pair cost by category
   const barData = data.buckets.filter((b) => b.count > 0);
@@ -92,12 +92,13 @@ export function TimePriceCard({ data }: TimePriceCardProps) {
       {/* Summary */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-lg">Time–Price Relationship</CardTitle>
+          <CardTitle className="text-lg">시간-가격 관계</CardTitle>
+          <p className="text-xs text-muted-foreground">매수 간격이 페어 코스트에 미치는 영향</p>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div>
-              <p className="text-sm text-muted-foreground">Gap ↔ Cost Correlation</p>
+              <p className="text-sm text-muted-foreground">간격 ↔ 코스트 상관관계</p>
               <p className="text-xl font-bold">{data.correlation.toFixed(3)}</p>
               <p className="text-xs text-muted-foreground">{corrLabel} {corrDir}</p>
             </div>
@@ -119,7 +120,7 @@ export function TimePriceCard({ data }: TimePriceCardProps) {
       {/* Avg Pair Cost by Timing Category */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-base">Avg Pair Cost by Timing</CardTitle>
+          <CardTitle className="text-base">타이밍별 평균 페어 코스트</CardTitle>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={250}>
@@ -150,7 +151,7 @@ export function TimePriceCard({ data }: TimePriceCardProps) {
       {/* Scatter: Gap vs Pair Cost */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-base">Gap vs Pair Cost (each dot = 1 pair)</CardTitle>
+          <CardTitle className="text-base">시간 간격 vs 페어 코스트 (점 1개 = 페어 1개)</CardTitle>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={300}>
@@ -187,7 +188,7 @@ export function TimePriceCard({ data }: TimePriceCardProps) {
             </ScatterChart>
           </ResponsiveContainer>
           <p className="text-xs text-muted-foreground text-center mt-2">
-            Green = profitable (cost &lt; $1), Red = unprofitable. X-axis is log scale.
+            초록 = 수익 (코스트 &lt; $1), 빨강 = 손실. X축은 로그 스케일.
           </p>
         </CardContent>
       </Card>
@@ -195,7 +196,7 @@ export function TimePriceCard({ data }: TimePriceCardProps) {
       {/* Detail table: Entry prices by timing */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-base">Pairs: Entry Prices & Timing</CardTitle>
+          <CardTitle className="text-base">페어별 진입가 & 타이밍</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           {data.pairs

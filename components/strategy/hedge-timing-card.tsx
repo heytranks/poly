@@ -46,7 +46,7 @@ export function HedgeTimingCard({ data }: HedgeTimingCardProps) {
     return (
       <Card>
         <CardContent className="flex items-center justify-center h-48 text-muted-foreground">
-          No hedge timing data available
+          헤지 타이밍 데이터가 없습니다
         </CardContent>
       </Card>
     );
@@ -59,24 +59,25 @@ export function HedgeTimingCard({ data }: HedgeTimingCardProps) {
       {/* Summary */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-lg">Hedge Timing Analysis</CardTitle>
+          <CardTitle className="text-lg">헤지 타이밍 분석</CardTitle>
+          <p className="text-xs text-muted-foreground">첫 번째 매수와 반대쪽 매수 사이의 시간 간격</p>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div>
-              <p className="text-sm text-muted-foreground">Total Pairs</p>
+              <p className="text-sm text-muted-foreground">전체 페어</p>
               <p className="text-xl font-bold">{data.totalPairsAnalyzed}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Avg Gap</p>
+              <p className="text-sm text-muted-foreground">평균 간격</p>
               <p className="text-xl font-bold">{formatGap(data.avgGapMinutes)}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Median Gap</p>
+              <p className="text-sm text-muted-foreground">중앙값 간격</p>
               <p className="text-xl font-bold">{formatGap(data.medianGapMinutes)}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Most Common</p>
+              <p className="text-sm text-muted-foreground">가장 흔한 패턴</p>
               <Badge className={CATEGORY_BADGE_STYLES[topCategory.category]}>
                 {topCategory.label}
               </Badge>
@@ -88,7 +89,7 @@ export function HedgeTimingCard({ data }: HedgeTimingCardProps) {
       {/* Bar Chart */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-base">Timing Distribution</CardTitle>
+          <CardTitle className="text-base">타이밍 분포</CardTitle>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={250}>
@@ -113,7 +114,7 @@ export function HedgeTimingCard({ data }: HedgeTimingCardProps) {
       {/* Top pairs table */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-base">Top 10 Hedge Pairs by Timing</CardTitle>
+          <CardTitle className="text-base">타이밍별 상위 10개 헤지 페어</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           {data.pairs.slice(0, 10).map((pair, idx) => (
@@ -123,8 +124,8 @@ export function HedgeTimingCard({ data }: HedgeTimingCardProps) {
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate" title={pair.title}>{pair.title}</p>
                   <div className="flex gap-3 mt-1 text-xs text-muted-foreground">
-                    <span>First Leg: {pair.firstLeg}</span>
-                    <span>Gap: {formatGap(pair.gapMinutes)}</span>
+                    <span>첫 매수: {pair.firstLeg}</span>
+                    <span>간격: {formatGap(pair.gapMinutes)}</span>
                   </div>
                 </div>
                 <Badge className={CATEGORY_BADGE_STYLES[pair.category]}>

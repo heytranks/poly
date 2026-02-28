@@ -1,7 +1,7 @@
-import type { RawClosedPosition, WinRateAnalysis } from '@/lib/types';
+import type { MarketPnL, WinRateAnalysis } from '@/lib/types';
 
-export function analyzeWinRate(closedPositions: RawClosedPosition[]): WinRateAnalysis {
-  const total = closedPositions.length;
+export function analyzeWinRate(closedMarkets: MarketPnL[]): WinRateAnalysis {
+  const total = closedMarkets.length;
   if (total === 0) {
     return {
       totalClosed: 0,
@@ -16,14 +16,18 @@ export function analyzeWinRate(closedPositions: RawClosedPosition[]): WinRateAna
     };
   }
 
-  const wins = closedPositions.filter((p) => p.realizedPnl > 0);
-  const losses = closedPositions.filter((p) => p.realizedPnl <= 0);
+  const wins = closedMarkets.filter((m) => m.realizedPnl > 0);
+  const losses = closedMarkets.filter((m) => m.realizedPnl <= 0);
 
   const winRate = wins.length / total;
-  const avgWin = wins.length > 0 ? wins.reduce((s, p) => s + p.realizedPnl, 0) / wins.length : 0;
-  const avgLoss = losses.length > 0 ? losses.reduce((s, p) => s + p.realizedPnl, 0) / losses.length : 0;
+  const avgWin = wins.length > 0 ? wins.reduce((s, m) => s + m.realizedPnl, 0) / wins.length : 0;
+  const avgLoss = losses.length > 0 ? losses.reduce((s, m) => s + m.realizedPnl, 0) / losses.length : 0;
 
-  const { longestWinStreak, longestLossStreak } = calculateStreaks(closedPositions);
+  // Sort by lastActivityTime for streak calculation
+  const sorted = [...closedMarkets].sort(
+    (a, b) => a.lastActivityTime.getTime() - b.lastActivityTime.getTime()
+  );
+  const { longestWinStreak, longestLossStreak } = calculateStreaks(sorted);
 
   const expectancy = winRate * avgWin + (1 - winRate) * avgLoss;
 
@@ -41,15 +45,15 @@ export function analyzeWinRate(closedPositions: RawClosedPosition[]): WinRateAna
 }
 
 function calculateStreaks(
-  positions: RawClosedPosition[]
+  markets: MarketPnL[]
 ): { longestWinStreak: number; longestLossStreak: number } {
   let longestWinStreak = 0;
   let longestLossStreak = 0;
   let currentWinStreak = 0;
   let currentLossStreak = 0;
 
-  for (const pos of positions) {
-    if (pos.realizedPnl > 0) {
+  for (const market of markets) {
+    if (market.realizedPnl > 0) {
       currentWinStreak++;
       currentLossStreak = 0;
       longestWinStreak = Math.max(longestWinStreak, currentWinStreak);

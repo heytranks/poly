@@ -26,15 +26,15 @@ export function DirectionChart({ data }: DirectionChartProps) {
     return (
       <Card>
         <CardContent className="flex items-center justify-center h-48 text-muted-foreground">
-          No direction data available
+          방향성 데이터가 없습니다
         </CardContent>
       </Card>
     );
   }
 
   const barData = [
-    { name: 'YES', count: data.yesCount, pnl: data.yesPnl, winRate: data.yesWinRate },
-    { name: 'NO', count: data.noCount, pnl: data.noPnl, winRate: data.noWinRate },
+    { name: 'YES', volume: data.yesVolume },
+    { name: 'NO', volume: data.noVolume },
   ];
 
   const biasColor =
@@ -48,8 +48,8 @@ export function DirectionChart({ data }: DirectionChartProps) {
       <Card>
         <CardHeader className="pb-2">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-lg">Direction Bias</CardTitle>
-            <Badge className={biasColor}>{data.bias} Bias</Badge>
+            <CardTitle className="text-lg">방향 편향</CardTitle>
+            <Badge className={biasColor}>{data.bias} 편향</Badge>
           </div>
         </CardHeader>
         <CardContent>
@@ -62,21 +62,18 @@ export function DirectionChart({ data }: DirectionChartProps) {
               </div>
               <div className="space-y-1 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Trades</span>
+                  <span className="text-muted-foreground">거래 수</span>
                   <span>{data.yesCount} ({formatPercent(total > 0 ? data.yesCount / total : 0)})</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">PnL</span>
-                  <span className={data.yesPnl >= 0 ? 'text-green-500' : 'text-red-500'}>
-                    {formatCurrency(data.yesPnl)}
-                  </span>
+                  <span className="text-muted-foreground">거래액</span>
+                  <span>{formatCurrency(data.yesVolume)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Win Rate</span>
-                  <span>{formatPercent(data.yesWinRate)}</span>
+                  <span className="text-muted-foreground">평균 매수가</span>
+                  <span>{(data.avgYesPrice * 100).toFixed(1)}c</span>
                 </div>
               </div>
-              {/* Visual bar */}
               <div className="h-2 bg-muted rounded-full overflow-hidden">
                 <div
                   className="h-full bg-green-500 rounded-full transition-all"
@@ -93,21 +90,18 @@ export function DirectionChart({ data }: DirectionChartProps) {
               </div>
               <div className="space-y-1 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Trades</span>
+                  <span className="text-muted-foreground">거래 수</span>
                   <span>{data.noCount} ({formatPercent(total > 0 ? data.noCount / total : 0)})</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">PnL</span>
-                  <span className={data.noPnl >= 0 ? 'text-green-500' : 'text-red-500'}>
-                    {formatCurrency(data.noPnl)}
-                  </span>
+                  <span className="text-muted-foreground">거래액</span>
+                  <span>{formatCurrency(data.noVolume)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Win Rate</span>
-                  <span>{formatPercent(data.noWinRate)}</span>
+                  <span className="text-muted-foreground">평균 매수가</span>
+                  <span>{(data.avgNoPrice * 100).toFixed(1)}c</span>
                 </div>
               </div>
-              {/* Visual bar */}
               <div className="h-2 bg-muted rounded-full overflow-hidden">
                 <div
                   className="h-full bg-red-500 rounded-full transition-all"
@@ -119,10 +113,10 @@ export function DirectionChart({ data }: DirectionChartProps) {
         </CardContent>
       </Card>
 
-      {/* PnL comparison */}
+      {/* Volume comparison */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-base">PnL by Direction</CardTitle>
+          <CardTitle className="text-base">방향별 거래액</CardTitle>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={200}>
@@ -132,9 +126,9 @@ export function DirectionChart({ data }: DirectionChartProps) {
               <YAxis tickFormatter={(v) => formatCurrency(v)} stroke="hsl(220 10% 40%)" fontSize={11} />
               <Tooltip
                 {...TOOLTIP_STYLE}
-                formatter={(value: number | undefined) => [formatCurrency(value ?? 0), 'PnL']}
+                formatter={(value: number | undefined) => [formatCurrency(value ?? 0), '거래액']}
               />
-              <Bar dataKey="pnl" radius={[4, 4, 0, 0]}>
+              <Bar dataKey="volume" radius={[4, 4, 0, 0]}>
                 {barData.map((entry, i) => (
                   <Cell key={i} fill={entry.name === 'YES' ? '#22c55e' : '#ef4444'} />
                 ))}

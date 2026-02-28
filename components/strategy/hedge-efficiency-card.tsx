@@ -26,7 +26,7 @@ export function HedgeEfficiencyCard({ data }: HedgeEfficiencyCardProps) {
     return (
       <Card>
         <CardContent className="flex items-center justify-center h-48 text-muted-foreground">
-          No hedge efficiency data available
+          헤지 효율 데이터가 없습니다
         </CardContent>
       </Card>
     );
@@ -39,24 +39,25 @@ export function HedgeEfficiencyCard({ data }: HedgeEfficiencyCardProps) {
       {/* Summary */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-lg">Hedge Efficiency</CardTitle>
+          <CardTitle className="text-lg">헤지 효율</CardTitle>
+          <p className="text-xs text-muted-foreground">투입 자본 대비 확정 수익의 효율성</p>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div>
-              <p className="text-sm text-muted-foreground">Capital Deployed</p>
+              <p className="text-sm text-muted-foreground">투입 자본</p>
               <p className="text-xl font-bold">{formatCurrency(data.totalCapitalDeployed)}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Total Locked Profit</p>
+              <p className="text-sm text-muted-foreground">확정 수익 합계</p>
               <p className="text-xl font-bold text-green-500">{formatCurrency(data.totalLockedProfit)}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Avg Pair Cost</p>
+              <p className="text-sm text-muted-foreground">평균 페어 코스트</p>
               <p className="text-xl font-bold">{data.avgPairCost.toFixed(4)}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Capital Efficiency</p>
+              <p className="text-sm text-muted-foreground">자본 효율</p>
               <p className="text-xl font-bold">{formatPercent(data.capitalEfficiency)}</p>
             </div>
           </div>
@@ -66,7 +67,7 @@ export function HedgeEfficiencyCard({ data }: HedgeEfficiencyCardProps) {
       {/* Histogram */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-base">Pair Cost Distribution</CardTitle>
+          <CardTitle className="text-base">페어 코스트 분포</CardTitle>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={250}>
@@ -92,7 +93,7 @@ export function HedgeEfficiencyCard({ data }: HedgeEfficiencyCardProps) {
       {/* Top ROI list */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-base">Top 10 by ROI</CardTitle>
+          <CardTitle className="text-base">ROI 상위 10개</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           {sortedByRoi.slice(0, 10).map((pair, idx) => (
@@ -102,9 +103,9 @@ export function HedgeEfficiencyCard({ data }: HedgeEfficiencyCardProps) {
                 <div className="flex-1 min-w-0">
                   <p className="text-sm font-medium truncate" title={pair.title}>{pair.title}</p>
                   <div className="flex gap-3 mt-1 text-xs text-muted-foreground">
-                    <span>Cost: {pair.pairCost.toFixed(4)}</span>
-                    <span>Capital: {formatCurrency(pair.capitalInvested)}</span>
-                    <span>Profit: {formatCurrency(pair.lockedProfit)}</span>
+                    <span>코스트: {pair.pairCost.toFixed(4)}</span>
+                    <span>투입: {formatCurrency(pair.capitalInvested)}</span>
+                    <span>수익: {formatCurrency(pair.lockedProfit)}</span>
                   </div>
                 </div>
                 <Badge className={pair.roi > 0

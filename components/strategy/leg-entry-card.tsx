@@ -26,7 +26,7 @@ export function LegEntryCard({ data }: LegEntryCardProps) {
     return (
       <Card>
         <CardContent className="flex items-center justify-center h-48 text-muted-foreground">
-          No leg entry data available
+          레그 진입가 데이터가 없습니다
         </CardContent>
       </Card>
     );
@@ -41,34 +41,35 @@ export function LegEntryCard({ data }: LegEntryCardProps) {
       {/* Summary */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-lg">Leg Entry Price Analysis</CardTitle>
+          <CardTitle className="text-lg">레그별 진입가 분석</CardTitle>
+          <p className="text-xs text-muted-foreground">첫 번째/두 번째 매수의 가격 차이</p>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div>
-              <p className="text-sm text-muted-foreground">Avg First Leg Price</p>
+              <p className="text-sm text-muted-foreground">평균 1차 매수가</p>
               <p className="text-xl font-bold text-purple-400">
                 {(data.avgFirstLegPrice * 100).toFixed(1)}c
               </p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Avg Second Leg Price</p>
+              <p className="text-sm text-muted-foreground">평균 2차 매수가</p>
               <p className="text-xl font-bold text-blue-400">
                 {(data.avgSecondLegPrice * 100).toFixed(1)}c
               </p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Avg Spread</p>
+              <p className="text-sm text-muted-foreground">평균 스프레드</p>
               <p className="text-xl font-bold">
                 {(data.avgSpread * 100).toFixed(1)}c
               </p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Cheap Entry Rate</p>
+              <p className="text-sm text-muted-foreground">저가 진입 비율</p>
               <p className="text-xl font-bold text-green-500">
                 {formatPercent(data.cheapEntryRate)}
               </p>
-              <p className="text-xs text-muted-foreground">First leg &lt; 50c</p>
+              <p className="text-xs text-muted-foreground">1차 매수 &lt; 50c</p>
             </div>
           </div>
         </CardContent>
@@ -77,7 +78,7 @@ export function LegEntryCard({ data }: LegEntryCardProps) {
       {/* Price Distribution */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-base">Entry Price Distribution: First Leg vs Second Leg</CardTitle>
+          <CardTitle className="text-base">진입가 분포: 1차 vs 2차 매수</CardTitle>
         </CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={300}>
@@ -91,8 +92,8 @@ export function LegEntryCard({ data }: LegEntryCardProps) {
                 formatter={(value: any, name: any) => [value, name]}
               />
               <Legend />
-              <Bar dataKey="firstLegCount" name="First Leg" fill="#a855f7" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="secondLegCount" name="Second Leg" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="firstLegCount" name="1차 매수" fill="#a855f7" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="secondLegCount" name="2차 매수" fill="#3b82f6" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </CardContent>
@@ -101,7 +102,7 @@ export function LegEntryCard({ data }: LegEntryCardProps) {
       {/* Pair Detail Table */}
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-base">Hedge Pairs by Entry Price</CardTitle>
+          <CardTitle className="text-base">진입가별 헤지 페어</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
           {data.pairs

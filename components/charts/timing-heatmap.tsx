@@ -10,7 +10,7 @@ import {
 import { cn } from '@/lib/utils';
 import type { TimingPattern } from '@/lib/types';
 
-const DAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const DAY_LABELS = ['일', '월', '화', '수', '목', '금', '토'];
 const HOUR_LABELS = Array.from({ length: 24 }, (_, i) =>
   i === 0 ? '12a' : i < 12 ? `${i}a` : i === 12 ? '12p' : `${i - 12}p`
 );
@@ -34,9 +34,9 @@ export function TimingHeatmap({ data }: TimingHeatmapProps) {
   return (
     <Card>
       <CardHeader className="pb-2">
-        <CardTitle className="text-lg">Trading Activity Heatmap</CardTitle>
+        <CardTitle className="text-lg">거래 활동 히트맵</CardTitle>
         <p className="text-sm text-muted-foreground">
-          Most active: {data.mostActiveDay} at {data.mostActiveHour}:00 UTC
+          가장 활발한 시간: {data.mostActiveDay} {data.mostActiveHour}:00 UTC
         </p>
       </CardHeader>
       <CardContent>
@@ -71,10 +71,10 @@ export function TimingHeatmap({ data }: TimingHeatmapProps) {
                           </TooltipTrigger>
                           <TooltipContent side="top" className="text-xs">
                             <p className="font-medium">{day} {hourIdx}:00 UTC</p>
-                            <p>{cell.count} trades</p>
+                            <p>{cell.count}건 거래</p>
                             {cell.avgPnl !== 0 && (
                               <p className={cell.avgPnl > 0 ? 'text-green-500' : 'text-red-500'}>
-                                Avg PnL: ${cell.avgPnl.toFixed(2)}
+                                평균 손익: ${cell.avgPnl.toFixed(2)}
                               </p>
                             )}
                           </TooltipContent>
@@ -87,7 +87,7 @@ export function TimingHeatmap({ data }: TimingHeatmapProps) {
 
               {/* Legend */}
               <div className="flex items-center gap-2 mt-3 ml-10 text-xs text-muted-foreground">
-                <span>Less</span>
+                <span>적음</span>
                 <div className="flex gap-[2px]">
                   <div className="w-3 h-3 rounded-sm bg-muted/30" />
                   <div className="w-3 h-3 rounded-sm bg-primary/20" />
@@ -95,7 +95,7 @@ export function TimingHeatmap({ data }: TimingHeatmapProps) {
                   <div className="w-3 h-3 rounded-sm bg-primary/60" />
                   <div className="w-3 h-3 rounded-sm bg-primary/90" />
                 </div>
-                <span>More</span>
+                <span>많음</span>
               </div>
             </div>
           </div>

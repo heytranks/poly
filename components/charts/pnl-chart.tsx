@@ -76,7 +76,7 @@ export function PnlChart({ data }: PnlChartProps) {
     return (
       <Card>
         <CardContent className="flex items-center justify-center h-[400px] text-muted-foreground">
-          No PnL data available
+          손익 데이터가 없습니다
         </CardContent>
       </Card>
     );
@@ -86,7 +86,7 @@ export function PnlChart({ data }: PnlChartProps) {
     <Card>
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between flex-wrap gap-2">
-          <CardTitle className="text-lg">Cumulative PnL</CardTitle>
+          <CardTitle className="text-lg">누적 손익</CardTitle>
           <div className="flex gap-1">
             {/* Period buttons */}
             <div className="flex gap-1 mr-2">
@@ -110,7 +110,7 @@ export function PnlChart({ data }: PnlChartProps) {
                 className="h-7 px-2.5 text-xs"
                 onClick={() => setGranularity('daily')}
               >
-                Daily
+                일별
               </Button>
               <Button
                 variant={granularity === 'weekly' ? 'default' : 'ghost'}
@@ -118,7 +118,7 @@ export function PnlChart({ data }: PnlChartProps) {
                 className="h-7 px-2.5 text-xs"
                 onClick={() => setGranularity('weekly')}
               >
-                Weekly
+                주별
               </Button>
             </div>
           </div>
@@ -164,7 +164,7 @@ export function PnlChart({ data }: PnlChartProps) {
                   timeZone: 'UTC',
                 });
               }}
-              formatter={(value: number | undefined) => [formatCurrency(value ?? 0), 'Cumulative PnL']}
+              formatter={(value: number | undefined) => [formatCurrency(value ?? 0), '누적 손익']}
             />
             <Area
               type="monotone"
@@ -176,7 +176,7 @@ export function PnlChart({ data }: PnlChartProps) {
           </AreaChart>
         </ResponsiveContainer>
         <p className="text-xs text-muted-foreground text-center mt-2">
-          {chartData.length} data points ({granularity})
+          {chartData.length}개 데이터 ({granularity === 'daily' ? '일별' : '주별'})
         </p>
       </CardContent>
     </Card>
