@@ -11,6 +11,8 @@ export const RATE_LIMITS = {
 export const PAGINATION = {
   tradesPerPage: 500,
   maxTrades: 2000,
+  activityPerPage: 100,
+  maxActivities: 3100,   // API hard limit: offset 3000 max
   tablePageSize: 20,
 } as const;
 

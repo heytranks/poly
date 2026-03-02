@@ -1,104 +1,102 @@
 'use client';
 
+import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Card, CardContent } from '@/components/ui/card';
 import { TradesTable } from '@/components/trades/trades-table';
-import { PnlChart } from '@/components/charts/pnl-chart';
-import { PairCostCard } from '@/components/strategy/pair-cost-card';
-import { HedgeTimingCard } from '@/components/strategy/hedge-timing-card';
-import { HedgeEfficiencyCard } from '@/components/strategy/hedge-efficiency-card';
-import { MarketSelectionCard } from '@/components/strategy/market-selection-card';
-import { LegEntryCard } from '@/components/strategy/leg-entry-card';
-import { SpreadPatternCard } from '@/components/strategy/spread-pattern-card';
-import { TimePriceCard } from '@/components/strategy/time-price-card';
-import { TimingHeatmap } from '@/components/charts/timing-heatmap';
-import { CategoryChart } from '@/components/charts/category-chart';
-import { DirectionChart } from '@/components/charts/direction-chart';
-import { EntryPriceChart } from '@/components/charts/entry-price-chart';
-import { BotAnalysisPanel } from '@/components/charts/bot-analysis-panel';
+import { StrategyPanel } from '@/components/bot-analysis/strategy-panel';
+import { MarketPanel } from '@/components/bot-analysis/market-panel';
+import { SizingProfitPanel } from '@/components/bot-analysis/sizing-profit-panel';
+import { PriceContextPanel } from '@/components/bot-analysis/price-context-panel';
+import { BotLogicSection } from '@/components/bot-analysis/bot-logic-section';
 import type { AnalysisSummary, Trade } from '@/lib/types';
+import type { HedgePair } from '@/lib/utils/hedge-pairs';
 
 interface DashboardTabsProps {
   analysis: AnalysisSummary;
   trades: Trade[];
+  hedgePairs?: HedgePair[];
 }
 
-export function DashboardTabs({ analysis, trades }: DashboardTabsProps) {
+export function DashboardTabs({ analysis, trades, hedgePairs }: DashboardTabsProps) {
+  const [tradesOpen, setTradesOpen] = useState(false);
+
+  const defaultTab = analysis.priceContext ? 'price-context' : 'strategy';
+
   return (
-    <Tabs defaultValue="trades" className="w-full">
-      <TabsList className="bg-muted/50 flex-wrap h-auto gap-1 p-1">
-        <TabsTrigger value="trades">거래 내역</TabsTrigger>
-        <TabsTrigger value="pnl">손익 차트</TabsTrigger>
-        <TabsTrigger value="strategy">전략 분석</TabsTrigger>
-        <TabsTrigger value="categories">마켓별</TabsTrigger>
-        <TabsTrigger value="timing">시간대</TabsTrigger>
-        <TabsTrigger value="direction">방향성</TabsTrigger>
-        <TabsTrigger value="entry">진입가</TabsTrigger>
-        {analysis.botAnalysis && (
-          <TabsTrigger value="bot">봇 분석</TabsTrigger>
+    <div className="space-y-4">
+      {/* Trades toggle */}
+      <Card>
+        <button
+          onClick={() => setTradesOpen(!tradesOpen)}
+          className="flex items-center justify-between w-full text-left px-6 py-3"
+        >
+          <span className="text-lg font-semibold">거래 내역</span>
+          <span className="text-sm text-muted-foreground">
+            {trades.length}건 {tradesOpen ? '▲' : '▼'}
+          </span>
+        </button>
+        {tradesOpen && (
+          <CardContent className="pt-0">
+            <TradesTable trades={trades} hedgePairs={hedgePairs} />
+          </CardContent>
         )}
-      </TabsList>
+      </Card>
 
-      <TabsContent value="trades" className="mt-4">
-        <TradesTable trades={trades} />
-      </TabsContent>
-
-      <TabsContent value="pnl" className="mt-4">
-        <PnlChart data={analysis.pnl.cumulativePnlSeries} />
-      </TabsContent>
-
-      <TabsContent value="strategy" className="mt-4">
-        <div className="space-y-4">
-          <PairCostCard analysis={analysis.pairCost} />
-          {analysis.hedgeAnalysis && (
-            <>
-              <LegEntryCard data={analysis.hedgeAnalysis.legEntry} />
-              <SpreadPatternCard data={analysis.hedgeAnalysis.spreadPattern} />
-              <TimePriceCard data={analysis.hedgeAnalysis.timePrice} />
-              <HedgeTimingCard data={analysis.hedgeAnalysis.timing} />
-              <HedgeEfficiencyCard data={analysis.hedgeAnalysis.efficiency} />
-              <MarketSelectionCard data={analysis.hedgeAnalysis.marketSelection} />
-            </>
+      {/* Analysis tabs */}
+      <Tabs defaultValue={defaultTab} className="w-full">
+        <TabsList className="bg-muted/50 flex-wrap h-auto gap-1 p-1">
+          {analysis.priceContext && (
+            <TabsTrigger value="price-context">거래 타이밍</TabsTrigger>
           )}
-        </div>
-      </TabsContent>
+          {analysis.priceContext && (
+            <TabsTrigger value="bot-logic">봇 로직</TabsTrigger>
+          )}
+          {analysis.strategyProfitability && analysis.execution && (
+            <TabsTrigger value="strategy">헷지 분석</TabsTrigger>
+          )}
+          {analysis.marketSelection && (
+            <TabsTrigger value="market">마켓 분포</TabsTrigger>
+          )}
+          {analysis.positionSizing && analysis.profitStructure && (
+            <TabsTrigger value="sizing-profit">투입 & 수익</TabsTrigger>
+          )}
+        </TabsList>
 
-      <TabsContent value="categories" className="mt-4">
-        {analysis.categories ? (
-          <CategoryChart data={analysis.categories} />
-        ) : (
-          <p className="text-muted-foreground text-center py-8">마켓 카테고리 데이터가 없습니다</p>
+        {analysis.priceContext && (
+          <TabsContent value="price-context" className="mt-4">
+            <PriceContextPanel data={analysis.priceContext} />
+          </TabsContent>
         )}
-      </TabsContent>
 
-      <TabsContent value="timing" className="mt-4">
-        {analysis.timing ? (
-          <TimingHeatmap data={analysis.timing} />
-        ) : (
-          <p className="text-muted-foreground text-center py-8">시간대 데이터가 없습니다</p>
+        {analysis.priceContext && (
+          <TabsContent value="bot-logic" className="mt-4">
+            <BotLogicSection markets={analysis.priceContext.markets} />
+          </TabsContent>
         )}
-      </TabsContent>
 
-      <TabsContent value="direction" className="mt-4">
-        {analysis.direction ? (
-          <DirectionChart data={analysis.direction} />
-        ) : (
-          <p className="text-muted-foreground text-center py-8">방향성 데이터가 없습니다</p>
+        {analysis.strategyProfitability && analysis.execution && hedgePairs && (
+          <TabsContent value="strategy" className="mt-4">
+            <StrategyPanel
+              profitability={analysis.strategyProfitability}
+              execution={analysis.execution}
+              hedgePairs={hedgePairs}
+            />
+          </TabsContent>
         )}
-      </TabsContent>
 
-      <TabsContent value="entry" className="mt-4">
-        {analysis.entryPrice ? (
-          <EntryPriceChart data={analysis.entryPrice} />
-        ) : (
-          <p className="text-muted-foreground text-center py-8">진입가 데이터가 없습니다</p>
+        {analysis.marketSelection && (
+          <TabsContent value="market" className="mt-4">
+            <MarketPanel data={analysis.marketSelection} />
+          </TabsContent>
         )}
-      </TabsContent>
 
-      {analysis.botAnalysis && (
-        <TabsContent value="bot" className="mt-4">
-          <BotAnalysisPanel data={analysis.botAnalysis} />
-        </TabsContent>
-      )}
-    </Tabs>
+        {analysis.positionSizing && analysis.profitStructure && (
+          <TabsContent value="sizing-profit" className="mt-4">
+            <SizingProfitPanel sizing={analysis.positionSizing} profit={analysis.profitStructure} />
+          </TabsContent>
+        )}
+      </Tabs>
+    </div>
   );
 }

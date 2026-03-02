@@ -6,15 +6,15 @@ import type {
   AnalysisSummary,
 } from '@/lib/types';
 import { calculatePositionPnLs, aggregateMarketPnL, getClosedMarketPnLs } from '@/lib/utils/activity-pnl';
+import { getHedgePairs } from '@/lib/utils/hedge-pairs';
 import { analyzePnl } from './pnl';
 import { analyzeWinRate } from './win-rate';
 import { analyzePairCost } from './pair-cost';
-import { analyzeTiming } from './timing';
-import { analyzeCategories } from './categories';
-import { analyzeDirection } from './direction';
-import { analyzeEntryPrice } from './entry-price';
-import { analyzeHedging } from './hedge-analysis';
-import { analyzeBotStrategy } from './bot-analysis';
+import { analyzeStrategyProfitability } from './trigger-detection';
+import { analyzeExecution } from './execution-analysis';
+import { analyzeMarketSelection } from './market-selection';
+import { analyzePositionSizing } from './position-sizing';
+import { analyzeProfitStructure } from './profit-structure';
 
 export interface AnalysisContext {
   activities: RawActivity[];
@@ -52,32 +52,45 @@ export function runFullAnalysis(
   const pnl = analyzePnl(ctx.positionPnLs, ctx.marketPnLs, ctx.openPositions);
   const winRate = analyzeWinRate(ctx.closedMarkets);
   const pairCost = analyzePairCost(ctx.activities);
-  const timing = analyzeTiming(ctx.activities);
-  const categories = analyzeCategories(ctx.activities);
-  const direction = analyzeDirection(ctx.activities);
-  const entryPrice = analyzeEntryPrice(ctx.activities);
-  const hedgeAnalysis = analyzeHedging(ctx.activities, ctx.marketPnLs, pairCost);
-  const botAnalysis = analyzeBotStrategy(ctx.activities);
+
+  // Build shared hedge pairs for all new analyzers
+  const hedgePairs = getHedgePairs(ctx.activities);
+
+  const strategyProfitability = hedgePairs.length > 0
+    ? analyzeStrategyProfitability(hedgePairs)
+    : undefined;
+  const execution = hedgePairs.length > 0
+    ? analyzeExecution(hedgePairs, ctx.activities)
+    : undefined;
+  const marketSelection = hedgePairs.length > 0
+    ? analyzeMarketSelection(hedgePairs)
+    : undefined;
+  const positionSizing = hedgePairs.length > 0
+    ? analyzePositionSizing(hedgePairs)
+    : undefined;
+  const profitStructure = hedgePairs.length > 0
+    ? analyzeProfitStructure(hedgePairs)
+    : undefined;
 
   return {
     pnl,
     winRate,
     pairCost,
-    timing,
-    categories,
-    direction,
-    entryPrice,
-    hedgeAnalysis,
-    botAnalysis,
+    strategyProfitability,
+    execution,
+    marketSelection,
+    positionSizing,
+    profitStructure,
+    // priceContext is set separately in page.tsx (requires async API calls)
   };
 }
 
 export { analyzePnl } from './pnl';
 export { analyzeWinRate } from './win-rate';
 export { analyzePairCost } from './pair-cost';
-export { analyzeTiming } from './timing';
-export { analyzeCategories } from './categories';
-export { analyzeDirection } from './direction';
-export { analyzeEntryPrice } from './entry-price';
-export { analyzeHedging } from './hedge-analysis';
-export { analyzeBotStrategy } from './bot-analysis';
+export { analyzeStrategyProfitability } from './trigger-detection';
+export { analyzeExecution } from './execution-analysis';
+export { analyzeMarketSelection } from './market-selection';
+export { analyzePositionSizing } from './position-sizing';
+export { analyzeProfitStructure } from './profit-structure';
+export { analyzePriceContext } from './price-context';

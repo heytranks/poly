@@ -1,9 +1,12 @@
 import { notFound } from 'next/navigation';
 import { resolveToWallet, getProfile, getAllActivity, getPositions, getClosedPositions, getPortfolioValue, getProfilePnl, getProfilePnlHistory } from '@/lib/api/polymarket';
 import { runFullAnalysis } from '@/lib/analyzers';
+import { analyzePriceContext } from '@/lib/analyzers/price-context';
 import { analyzeClosedPositionStats } from '@/lib/analyzers/closed-position-stats';
+import { getHedgePairs } from '@/lib/utils/hedge-pairs';
 import { ProfileHeader } from '@/components/dashboard/profile-header';
 import { SummaryCards } from '@/components/dashboard/summary-cards';
+import { PnlChart } from '@/components/charts/pnl-chart';
 import { DashboardTabs } from '@/components/dashboard/dashboard-tabs';
 import type { UserProfile, DataCoverage, RawActivity, RawClosedPosition, PnlDataPoint } from '@/lib/types';
 
@@ -68,6 +71,15 @@ export default async function AnalyzePage({ params }: PageProps) {
   // 4. Run analysis engine with all activities (pattern analysis)
   const analysis = runFullAnalysis(activities, openPositions, marketOutcomes);
 
+  // 5. Run price context analysis (async, requires Binance API calls)
+  const priceContext = await analyzePriceContext(activities).catch(() => undefined);
+  if (priceContext) {
+    analysis.priceContext = priceContext;
+  }
+
+  // Build hedge pairs for trades table highlighting
+  const hedgePairs = getHedgePairs(activities);
+
   // Transform all activities for dashboard display (trades tab shows full data)
   const trades = transformActivitiesToTrades(activities);
 
@@ -104,7 +116,7 @@ export default async function AnalyzePage({ params }: PageProps) {
     analysis.pnl.cumulativePnlSeries = Array.from(byDate.values());
   }
 
-  // 5. Calculate data coverage
+  // 6. Calculate data coverage
   const activityTimestamps = activities.map((a) => a.timestamp);
 
   const fmtMin = (ts: number) => {
@@ -123,7 +135,7 @@ export default async function AnalyzePage({ params }: PageProps) {
     newestClosedDate: closedTimestamps.length > 0 ? fmtMin(Math.max(...closedTimestamps)) : null,
   };
 
-  // 6. Build profile
+  // 7. Build profile
   const totalDollarVolume = activities
     .filter((a) => a.type === 'TRADE')
     .reduce((s, a) => s + a.usdcSize, 0);
@@ -154,7 +166,8 @@ export default async function AnalyzePage({ params }: PageProps) {
     <div className="mx-auto max-w-7xl px-4 py-6 space-y-6">
       <ProfileHeader profile={profile} />
       <SummaryCards analysis={analysis} />
-      <DashboardTabs analysis={analysis} trades={trades} />
+      <PnlChart data={analysis.pnl.cumulativePnlSeries} />
+      <DashboardTabs analysis={analysis} trades={trades} hedgePairs={hedgePairs} />
     </div>
   );
 }

@@ -27,6 +27,7 @@ import { ArrowUpDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import { formatCurrency, formatDateTime } from '@/lib/utils';
 import { PAGINATION } from '@/lib/constants';
 import type { Trade } from '@/lib/types';
+import type { HedgePair } from '@/lib/utils/hedge-pairs';
 
 const columns: ColumnDef<Trade>[] = [
   {
@@ -95,15 +96,26 @@ const columns: ColumnDef<Trade>[] = [
 
 interface TradesTableProps {
   trades: Trade[];
+  hedgePairs?: HedgePair[];
 }
 
-export function TradesTable({ trades }: TradesTableProps) {
+export function TradesTable({ trades, hedgePairs }: TradesTableProps) {
   const [sorting, setSorting] = useState<SortingState>([
     { id: 'timestamp', desc: true },
   ]);
   const [globalFilter, setGlobalFilter] = useState('');
 
   const data = useMemo(() => trades, [trades]);
+
+  // Build hedge pair lookup: conditionId → { isProfitable, pairIndex }
+  const hedgePairMap = useMemo(() => {
+    const map = new Map<string, { isProfitable: boolean; colorIndex: number }>();
+    if (!hedgePairs) return map;
+    hedgePairs.forEach((pair, idx) => {
+      map.set(pair.conditionId, { isProfitable: pair.isProfitable, colorIndex: idx % 10 });
+    });
+    return map;
+  }, [hedgePairs]);
 
   const table = useReactTable({
     data,
@@ -151,15 +163,23 @@ export function TradesTable({ trades }: TradesTableProps) {
           </TableHeader>
           <TableBody>
             {table.getRowModel().rows.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id}>
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
+              table.getRowModel().rows.map((row) => {
+                const hedgeInfo = hedgePairMap.get(row.original.conditionId);
+                const rowClass = hedgeInfo
+                  ? hedgeInfo.isProfitable
+                    ? 'bg-green-500/5 hover:bg-green-500/10 border-l-2 border-l-green-500/40'
+                    : 'bg-red-500/5 hover:bg-red-500/10 border-l-2 border-l-red-500/40'
+                  : '';
+                return (
+                  <TableRow key={row.id} className={rowClass}>
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                );
+              })
             ) : (
               <TableRow>
                 <TableCell colSpan={columns.length} className="h-24 text-center text-muted-foreground">

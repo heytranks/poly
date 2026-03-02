@@ -104,8 +104,8 @@ export async function getAllActivity(
   options: { types?: ActivityType[] } = {}
 ): Promise<RawActivity[]> {
   const allActivities: RawActivity[] = [];
-  const limit = 100;
-  const maxOffset = 10000;
+  const limit = PAGINATION.activityPerPage;
+  const maxOffset = PAGINATION.maxActivities;
   let offset = 0;
 
   while (offset < maxOffset) {
