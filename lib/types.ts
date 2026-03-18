@@ -599,3 +599,131 @@ export interface AnalysisSummary {
   profitStructure?: ProfitStructureAnalysis;
   priceContext?: PriceContextAnalysis;
 }
+
+// ============================================================
+// Arbitrage Monitor Types
+// ============================================================
+
+// --- PredictFun Raw API types ---
+
+export interface PredictFunOutcome {
+  name: string;
+  indexSet: number;
+  onChainId: string;
+  status: string | null;
+}
+
+export interface PredictFunRawMarket {
+  id: number;
+  title: string;
+  question: string;
+  conditionId: string;
+  polymarketConditionIds: string[];
+  categorySlug: string;
+  status: string;
+  tradingStatus: string;
+  feeRateBps: number;
+  outcomes: PredictFunOutcome[];
+  imageUrl: string;
+  isNegRisk: boolean;
+  description: string;
+}
+
+export interface PredictFunMarketsResponse {
+  success: boolean;
+  cursor: string;
+  data: PredictFunRawMarket[];
+}
+
+export interface PredictFunOrderbook {
+  marketId: number;
+  bids: [number, number][];  // [price, size]
+  asks: [number, number][];
+  lastOrderSettled: { price: string; side: string; outcome: string } | null;
+  updateTimestampMs: number;
+}
+
+// --- Matched Market ---
+
+export interface MatchedMarket {
+  id: number;
+  predictMarketId: number;
+  predictTitle: string;
+  polyConditionId: string;
+  polySlug: string;
+  polyQuestion: string;
+  category: string;
+  predictFeeBps: number;
+  matchedAt: string;
+}
+
+// --- Price data ---
+
+export interface MarketPrices {
+  polyYes: number;
+  polyNo: number;
+  predictYes: number;
+  predictNo: number;
+  updatedAt: number;
+}
+
+// --- Arb Opportunity ---
+
+export interface ArbStrategy {
+  label: string;
+  cost: number;
+  grossArb: number;
+  fees: number;
+  netArb: number;
+  netArbPct: number;
+  isProfitable: boolean;
+}
+
+export interface ArbOpportunity {
+  matchedMarketId: number;
+  predictMarketId: number;
+  polyConditionId: string;
+  title: string;
+  category: string;
+  polySlug: string;
+  prices: MarketPrices;
+  strategyA: ArbStrategy;
+  strategyB: ArbStrategy;
+  bestStrategy: 'A' | 'B' | 'NONE';
+  bestArbPct: number;
+  spread: number;
+}
+
+// --- Arb Episode ---
+
+export interface ArbEpisode {
+  id: number;
+  matchedMarketId: number;
+  title: string;
+  strategy: 'A' | 'B';
+  thresholdPct: number;
+  startedAt: string;
+  peakArbPct: number;
+  peakAt: string | null;
+  endedAt: string | null;
+  durationSeconds: number | null;
+  status: 'OPEN' | 'CLOSED';
+}
+
+// --- API responses ---
+
+export interface ArbitrageSummary {
+  totalMatched: number;
+  activeOpportunities: number;
+  bestArbPct: number;
+  openEpisodes: number;
+  avgEpisodeDurationMin: number;
+  totalEpisodes: number;
+  lastCollectedAt: string | null;
+}
+
+export interface ArbitrageDashboardData {
+  summary: ArbitrageSummary;
+  opportunities: ArbOpportunity[];
+  recentEpisodes: ArbEpisode[];
+}
